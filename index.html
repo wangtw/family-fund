@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>合伙基金管理系统 v3.9.3 (Linus Edition)</title>
+    <!-- [PATCH-GitHub] 关键修复：禁止发送 Referrer，绕过财经接口的防盗链检查 -->
+    <meta name="referrer" content="no-referrer">
+    <title>合伙基金管理系统 v3.9.5 (Full Excel Backup)</title>
 
     <!-- 核心依赖库 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,7 +13,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-    <!-- [PATCH-002]: Removed synchronous XLSX script. Loaded lazily. -->
     
     <!-- Dexie.js (Database) -->
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.min.js"></script>
@@ -152,8 +153,8 @@
 <div class="main-container">
     <div class="top-nav">
         <div class="brand-section">
-            <h1>合伙基金管理系统 <span class="ver-badge">v3.9.3</span></h1>
-            <p>Production Ready: Linus Edition (GC + LazyLoad + Daemon)</p>
+            <h1>合伙基金管理系统 <span class="ver-badge">v3.9.5</span></h1>
+            <p>GitHub Pages Ready: Full Excel Backup (Flows + Meta)</p>
         </div>
         <div class="controls-right">
             <div class="top-row">
@@ -351,7 +352,7 @@
     </div><button class="btn btn-outline-dark" onclick="app.ui.showModal('partnerModal')"><i class="fas fa-users-cog"></i> 合伙人管理</button><button class="btn btn-outline-secondary" onclick="app.data.backup()">下载备份 (.json)</button><button class="btn btn-outline-secondary" onclick="document.getElementById('file-restore').click()">恢复备份</button><input type="file" id="file-restore" style="display:none" onchange="app.data.restore(this)" accept=".json"><hr><button class="btn btn-outline-success" onclick="app.data.exportXLSX()">导出管理报表 (Excel)</button><button class="btn btn-outline-success" onclick="document.getElementById('file-xlsx').click()">导入 Excel 数据</button><input type="file" id="file-xlsx" style="display:none" onchange="app.data.importXLSX(this)" accept=".xlsx"><button class="btn btn-outline-secondary" onclick="app.ui.openCalib()">现金校准</button><hr><button class="btn btn-danger" onclick="app.data.nuke()">清空数据 (需密码)</button><button class="btn btn-warning" onclick="app.data.loadThinkDemo()">重置为演示数据</button></div></div></div></div></div>
 <div class="modal fade" id="partnerModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">合伙人管理</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small">僵尸账号(本金0)可物理删除；已清盘(本金>0)可隐藏。</div><ul id="mgmt-partner-list" class="list-group mb-3"></ul><div class="input-group"><input type="text" id="ipt-rename-old" class="form-control" placeholder="选择上方名字" readonly><input type="text" id="ipt-rename-new" class="form-control" placeholder="新名字"><button class="btn btn-primary" onclick="app.logic.renamePartner()">改名</button></div></div></div></div></div>
 <div class="modal fade" id="configModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">系统配置</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">应用名称</label><input type="text" id="cfgAppName" class="form-control" placeholder="输入应用名称"></div><div class="mb-3"><label class="form-label">备份提醒阈值（次）</label><input type="number" id="cfgThreshold" class="form-control" placeholder="5" min="1" max="100"><small class="text-muted">操作次数达到此值时提醒备份</small></div><div class="mb-3"><label class="form-label">汇率接口源 (FX Source)</label><select id="cfgFxSource" class="form-select"><option value="auto">⚡ 自动优选 (推荐)</option><option value="tencent">🐧 腾讯财经</option><option value="sina">👁️ 新浪财经</option><option value="frank">🇪🇺 Frankfurter</option><option value="yun">☁️ YunAPI</option></select><small class="text-muted">如果遇到汇率更新失败，可尝试手动切换接口。</small></div><div class="mb-3"><label class="form-label">默认汇率选项</label><div id="cfgRates" class="d-flex gap-3 flex-wrap"><label><input type="checkbox" value="CNY"> CNY</label><label><input type="checkbox" value="USD"> USD</label><label><input type="checkbox" value="EUR"> EUR</label><label><input type="checkbox" value="HKD"> HKD</label><label><input type="checkbox" value="JPY"> JPY</label><label><input type="checkbox" value="GBP"> GBP</label></div></div><div class="mb-3"><label class="form-label">操作指南（支持HTML）</label><textarea id="cfgGuide" rows="5" class="form-control" placeholder="输入操作指南内容，支持HTML标签..."></textarea></div><div class="mb-3"><label class="form-label">避坑手册（支持HTML）</label><textarea id="cfgManual" rows="5" class="form-control" placeholder="输入避坑手册内容，支持HTML标签..."></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-primary" onclick="app.configOps.save()">保存</button><button type="button" class="btn btn-secondary" onclick="app.configOps.reset()">重置</button><button type="button" class="btn btn-info" onclick="app.configOps.export()">导出配置</button><label class="btn btn-success mb-0"><input type="file" hidden accept=".json" onchange="app.configOps.import(event)">导入配置</label></div></div></div></div>
-<div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-book-open me-2"></i>操作指南 v3.9.3</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="nav nav-tabs mb-3" id="guideTabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#g-core">核心逻辑</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-operations">业务操作</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-backup">备份恢复</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-pitfalls">避坑手册</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-faq">常见问题</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-whatsnew">v3.9.3 更新</button></li></ul><div class="tab-content"><div class="tab-pane fade show active" id="g-core"><div class="alert alert-danger mb-4"><strong>🚨 一级警报：生死攸关</strong><hr class="my-2"><ul class="mb-0"><li>本系统 <strong>没有任何云端后台</strong>！所有数据都存储在您当前浏览器的缓存里。</li><li><strong>严禁手动清理浏览器缓存</strong>，否则您的几百万资产记录将瞬间灰飞烟灭。</li><li><strong>[每周五收盘后下载备份]</strong> 是本系统的生存铁律。没做备份等于没做账。</li></ul></div><div class="card mb-3"><div class="card-body"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-brain me-2"></i>30秒看懂"披萨理论"</h6><p class="mb-2">在乱点按钮之前，先理解系统的"大脑"是怎么思考的，防止你觉得系统算错了。</p><ul><li><strong>总资产 (AUM)</strong> = 你的现金余额 + 所有股票当前的市值。</li><li><strong>份额 (Shares)</strong> = 这是一个"绝对数量"，代表你拥有的权益份数。就像你拥有 <strong>5块</strong> 披萨。</li><li><strong>净值 (NAV)</strong> = <strong>1块</strong> 披萨现在值多少钱。<ul><li>系统公式：<code class="bg-light px-2 rounded">净值 = 总资产 / 总份额</code></li></ul></li><li><strong>赚钱逻辑</strong>：你的<strong>份额数量</strong>通常是不变的（除非你加钱买份额或提钱卖份额）。但随着股票涨跌，<strong>净值</strong>会变大变小，你的总资产（<code>份额</code> x <code>净值</code>）也就随之波动。</li></ul></div></div></div><div class="tab-pane fade" id="g-operations"><h5 class="fw-bold text-primary mb-4">📅 每周五的标准作业流程</h5><div class="alert alert-info"><i class="fas fa-plane-departure me-2"></i>请像飞机起飞检查一样，按顺序执行这 3 步。</div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-primary"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-power-off me-2"></i>Step 1：启动与健康检查</div><div class="card-body"><ol><li><strong>打开文件</strong>：双击 <code>合伙基金管理系统 v3.9.3.html</code>。</li><li><strong>看右上角胶囊状态</strong>：<ul><li>🟢 <strong>绿色 (系统正常)</strong>：汇率和股价都更新了，可以开始干活。</li><li>🔴 <strong>红色/黄色</strong>：断网或接口卡了。<ul><li><em>动作</em>：点击右上角的刷新按钮。或者点击胶囊查看是哪个数据源挂了。</li></ul></li></ul></li><li><strong>看左上角总资产</strong>：确认数字不是 0。</li></ol></div></div></div><div class="col-md-8"><div class="card h-100 border-warning"><div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-edit me-2"></i>Step 2：录入本周发生的变动</div><div class="card-body"><p class="small text-muted mb-3">根据实际情况，选择以下对应的场景操作：</p><h6 class="fw-bold mb-2">场景 A：新增合伙人</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：在输入框里直接打字输入新名字（系统会自动记录）。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果这是基金成立的第一笔钱，<code>当时净值</code> 默认为 1.0000。如果不是，系统会自动抓取当前净值。</li></ul></li><li><strong>确认</strong>。</li></ol><hr><h6 class="fw-bold mb-2">场景 B：资金注入</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：下拉选择老合伙人的名字。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果是补录以前的入金，<strong>必须</strong>修改日期，并填入那一天的历史净值。否则会发生"时空扭曲"，导致份额计算错误。</li></ul></li></ol><hr><h6 class="fw-bold mb-2">场景 C：资金赎回</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：选择要提钱的人。</li><li><strong>类型</strong>：选择"出金"。</li><li><strong>金额</strong>：输入他要提走的钱。</li><li>⚠️ <strong>系统限制</strong>：出金金额不得超过权益市值。</li></ol><hr><h6 class="fw-bold mb-2">场景 D：买卖股票</h6><button class="btn btn-info btn-sm mb-2">🔵 交易</button><ol class="small"><li><strong>检查现金</strong>：确保左侧面板的 <code>现金</code> 余额够买。</li><li><strong>代码</strong>：输入代码（如 <code>00700</code>、<code>600519</code>、<code>AAPL</code>）。<strong>停手 1 秒！</strong> 等下面显示出股票名称再继续。</li><li><strong>方向/价格/数量</strong>：如实填写。</li><li><strong>汇率</strong>：别动它，系统会自动填好。</li><li><strong>提交</strong>。</li></ol></div></div></div><div class="card border-success mt-3"><div class="card-header bg-success text-white fw-bold"><i class="fas fa-save me-2"></i>Step 3：备份 (Backup) —— <strong>最重要的一步</strong></div><div class="card-body"><p class="fw-bold text-danger mb-3">不做这一步，前面的功夫可能白费。</p><ol><li>点击右上角的 <strong>⚙️ 设置</strong>。</li><li>点击 <strong>"下载备份 (.json)"</strong>。</li><li>浏览器会下载一个类似 <code>Backup_2026-01-28.json</code> 的文件。</li><li><strong>动作</strong>：将此文件发送给自己的 <strong>微信文件传输助手</strong>、<strong>邮箱</strong> 或 <strong>网盘</strong>。<strong>别只放在桌面上！</strong></li></ol></div></div></div><div class="tab-pane fade" id="g-backup"><h5 class="fw-bold text-primary mb-4">💾 防灾备份指南</h5><div class="row g-4"><div class="col-md-6"><div class="card h-100"><div class="card-header bg-info text-white fw-bold"><i class="fas fa-clock me-2"></i>标准备份频率</div><div class="card-body"><ul class="mb-0"><li><strong>每周五下午 15:05</strong> (A股收盘后) -必做备份</li><li><strong>每月底</strong> - 归档备份（建议保留每月最后一个周五的备份）</li></ul></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-download me-2"></i>导出步骤</div><div class="card-body"><ol class="mb-0"><li>点击右上角 <strong>【设置】</strong>。</li><li>点击 <strong>【下载备份 (.json)】</strong>。</li><li>文件会自动下载，文件名包含今天的日期。</li><li><strong>把它存到网盘/微信收藏/你对象的聊天记录里，别只放在桌面上！</strong></li></ol></div></div></div></div><div class="tab-pane fade" id="g-whatsnew"><div class="alert alert-success mb-4"><i class="fas fa-rocket me-2"></i><strong>v3.9.3 (Linus Edition) 更新说明</strong></div><div class="row g-4"><div class="col-md-4"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold">Patch-001 Graphics</div><div class="card-body small"><p>修复了 Canvas 内存泄漏问题。</p><p>现在图表绘制前会强制执行垃圾回收，即使长时间运行也不会拖慢浏览器。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-success text-white fw-bold">Patch-002 LazyLoad</div><div class="card-body small"><p>Excel 驱动按需加载。</p><p>移除了首屏数百KB的脚本阻塞，系统启动速度提升 30%。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-warning text-dark fw-bold">Patch-003 Daemon</div><div class="card-body small"><p>引入写回守护进程。</p><p>数据保存不再依赖操作触发，改为后台每 5 秒自动检测并静默保存。</p></div></div></div></div></div></div></div></div></div></div>
+<div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-book-open me-2"></i>操作指南 v3.9.5</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="nav nav-tabs mb-3" id="guideTabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#g-core">核心逻辑</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-operations">业务操作</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-backup">备份恢复</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-pitfalls">避坑手册</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-faq">常见问题</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-whatsnew">v3.9.5 更新</button></li></ul><div class="tab-content"><div class="tab-pane fade show active" id="g-core"><div class="alert alert-danger mb-4"><strong>🚨 一级警报：生死攸关</strong><hr class="my-2"><ul class="mb-0"><li>本系统 <strong>没有任何云端后台</strong>！所有数据都存储在您当前浏览器的缓存里。</li><li><strong>严禁手动清理浏览器缓存</strong>，否则您的几百万资产记录将瞬间灰飞烟灭。</li><li><strong>[每周五收盘后下载备份]</strong> 是本系统的生存铁律。没做备份等于没做账。</li></ul></div><div class="card mb-3"><div class="card-body"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-brain me-2"></i>30秒看懂"披萨理论"</h6><p class="mb-2">在乱点按钮之前，先理解系统的"大脑"是怎么思考的，防止你觉得系统算错了。</p><ul><li><strong>总资产 (AUM)</strong> = 你的现金余额 + 所有股票当前的市值。</li><li><strong>份额 (Shares)</strong> = 这是一个"绝对数量"，代表你拥有的权益份数。就像你拥有 <strong>5块</strong> 披萨。</li><li><strong>净值 (NAV)</strong> = <strong>1块</strong> 披萨现在值多少钱。<ul><li>系统公式：<code class="bg-light px-2 rounded">净值 = 总资产 / 总份额</code></li></ul></li><li><strong>赚钱逻辑</strong>：你的<strong>份额数量</strong>通常是不变的（除非你加钱买份额或提钱卖份额）。但随着股票涨跌，<strong>净值</strong>会变大变小，你的总资产（<code>份额</code> x <code>净值</code>）也就随之波动。</li></ul></div></div></div><div class="tab-pane fade" id="g-operations"><h5 class="fw-bold text-primary mb-4">📅 每周五的标准作业流程</h5><div class="alert alert-info"><i class="fas fa-plane-departure me-2"></i>请像飞机起飞检查一样，按顺序执行这 3 步。</div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-primary"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-power-off me-2"></i>Step 1：启动与健康检查</div><div class="card-body"><ol><li><strong>打开文件</strong>：双击 <code>合伙基金管理系统 v3.9.5.html</code>。</li><li><strong>看右上角胶囊状态</strong>：<ul><li>🟢 <strong>绿色 (系统正常)</strong>：汇率和股价都更新了，可以开始干活。</li><li>🔴 <strong>红色/黄色</strong>：断网或接口卡了。<ul><li><em>动作</em>：点击右上角的刷新按钮。或者点击胶囊查看是哪个数据源挂了。</li></ul></li></ul></li><li><strong>看左上角总资产</strong>：确认数字不是 0。</li></ol></div></div></div><div class="col-md-8"><div class="card h-100 border-warning"><div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-edit me-2"></i>Step 2：录入本周发生的变动</div><div class="card-body"><p class="small text-muted mb-3">根据实际情况，选择以下对应的场景操作：</p><h6 class="fw-bold mb-2">场景 A：新增合伙人</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：在输入框里直接打字输入新名字（系统会自动记录）。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果这是基金成立的第一笔钱，<code>当时净值</code> 默认为 1.0000。如果不是，系统会自动抓取当前净值。</li></ul></li><li><strong>确认</strong>。</li></ol><hr><h6 class="fw-bold mb-2">场景 B：资金注入</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：下拉选择老合伙人的名字。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果是补录以前的入金，<strong>必须</strong>修改日期，并填入那一天的历史净值。否则会发生"时空扭曲"，导致份额计算错误。</li></ul></li></ol><hr><h6 class="fw-bold mb-2">场景 C：资金赎回</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：选择要提钱的人。</li><li><strong>类型</strong>：选择"出金"。</li><li><strong>金额</strong>：输入他要提走的钱。</li><li>⚠️ <strong>系统限制</strong>：出金金额不得超过权益市值。</li></ol><hr><h6 class="fw-bold mb-2">场景 D：买卖股票</h6><button class="btn btn-info btn-sm mb-2">🔵 交易</button><ol class="small"><li><strong>检查现金</strong>：确保左侧面板的 <code>现金</code> 余额够买。</li><li><strong>代码</strong>：输入代码（如 <code>00700</code>、<code>600519</code>、<code>AAPL</code>）。<strong>停手 1 秒！</strong> 等下面显示出股票名称再继续。</li><li><strong>方向/价格/数量</strong>：如实填写。</li><li><strong>汇率</strong>：别动它，系统会自动填好。</li><li><strong>提交</strong>。</li></ol></div></div></div><div class="card border-success mt-3"><div class="card-header bg-success text-white fw-bold"><i class="fas fa-save me-2"></i>Step 3：备份 (Backup) —— <strong>最重要的一步</strong></div><div class="card-body"><p class="fw-bold text-danger mb-3">不做这一步，前面的功夫可能白费。</p><ol><li>点击右上角的 <strong>⚙️ 设置</strong>。</li><li>点击 <strong>"下载备份 (.json)"</strong>。</li><li>浏览器会下载一个类似 <code>Backup_2026-01-28.json</code> 的文件。</li><li><strong>动作</strong>：将此文件发送给自己的 <strong>微信文件传输助手</strong>、<strong>邮箱</strong> 或 <strong>网盘</strong>。<strong>别只放在桌面上！</strong></li></ol></div></div></div><div class="tab-pane fade" id="g-backup"><h5 class="fw-bold text-primary mb-4">💾 防灾备份指南</h5><div class="row g-4"><div class="col-md-6"><div class="card h-100"><div class="card-header bg-info text-white fw-bold"><i class="fas fa-clock me-2"></i>标准备份频率</div><div class="card-body"><ul class="mb-0"><li><strong>每周五下午 15:05</strong> (A股收盘后) -必做备份</li><li><strong>每月底</strong> - 归档备份（建议保留每月最后一个周五的备份）</li></ul></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-download me-2"></i>导出步骤</div><div class="card-body"><ol class="mb-0"><li>点击右上角 <strong>【设置】</strong>。</li><li>点击 <strong>【下载备份 (.json)】</strong>。</li><li>文件会自动下载，文件名包含今天的日期。</li><li><strong>把它存到网盘/微信收藏/你对象的聊天记录里，别只放在桌面上！</strong></li></ol></div></div></div></div><div class="tab-pane fade" id="g-whatsnew"><div class="alert alert-success mb-4"><i class="fas fa-rocket me-2"></i><strong>v3.9.5 (Meta Sync) 更新说明</strong></div><div class="row g-4"><div class="col-md-4"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold">Patch-XLSX Meta</div><div class="card-body small"><p>Excel 备份全闭环。</p><p>现在 Excel 导出文件包含“行业分类”元数据表 (Meta Sheet)。导入 Excel 时会自动恢复所有资产的行业标签，不再丢失分类信息。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-success text-white fw-bold">Patch-GH Charset</div><div class="card-body small"><p>修复中文乱码。</p><p>强制指定 GBK 编码加载股票数据接口，解决在线部署时股票名称显示为 "" 的问题。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-warning text-dark fw-bold">Patch-003 Daemon</div><div class="card-body small"><p>引入写回守护进程。</p><p>数据保存不再依赖操作触发，改为后台每 5 秒自动检测并静默保存。</p></div></div></div></div></div></div></div></div></div></div>
 
 <script>
     const Calc = {
@@ -483,7 +484,7 @@
                 app.api.refresh(true);
             },
             apply: () => {
-                if (app.s.config.appName) { document.title = app.s.config.appName + " v3.9.3"; const h1 = document.querySelector('.brand-section h1'); if (h1) h1.innerHTML = `${app.s.config.appName} <span class="ver-badge">v3.9.3</span>`; }
+                if (app.s.config.appName) { document.title = app.s.config.appName + " v3.9.5"; const h1 = document.querySelector('.brand-section h1'); if (h1) h1.innerHTML = `${app.s.config.appName} <span class="ver-badge">v3.9.5</span>`; }
             },
             reset: () => { if (!confirm('重置所有配置为默认值？')) return; app.s.config = { ...DEFAULT_CONFIG }; document.getElementById('cfgAppName').value = DEFAULT_CONFIG.appName; document.getElementById('cfgThreshold').value = DEFAULT_CONFIG.backupThreshold; document.querySelectorAll('#cfgRates input').forEach(cb => cb.checked = DEFAULT_CONFIG.defaultRates.includes(cb.value)); document.getElementById('cfgGuide').value = ''; document.getElementById('cfgManual').value = ''; document.getElementById('cfgFxSource').value = 'auto'; },
             open: () => {
@@ -598,7 +599,17 @@
                     app.ui.toast("正在加载 Excel 驱动...");
                     await new Promise((resolve, reject) => app.api.load('https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js', resolve, reject));
                 }
-                const w = XLSX.utils.book_new(); ['trades', 'flows', 'journals'].forEach(k => { const cnData = app.s[k].map(row => { const newRow = {}; Object.keys(row).forEach(key => { if (FIELD_MAP[k][key]) newRow[FIELD_MAP[k][key]] = row[key]; else newRow[key] = row[key]; }); return newRow; }); XLSX.utils.book_append_sheet(w, XLSX.utils.json_to_sheet(cnData), k); }); XLSX.writeFile(w, `FundReport_${TODAY()}.xlsx`); 
+                const w = XLSX.utils.book_new(); 
+                ['trades', 'flows', 'journals'].forEach(k => { 
+                    const cnData = app.s[k].map(row => { const newRow = {}; Object.keys(row).forEach(key => { if (FIELD_MAP[k][key]) newRow[FIELD_MAP[k][key]] = row[key]; else newRow[key] = row[key]; }); return newRow; }); 
+                    XLSX.utils.book_append_sheet(w, XLSX.utils.json_to_sheet(cnData), k); 
+                });
+                
+                // [PATCH-Meta] Add 'stockMeta' sheet for industry backup in Excel
+                const metaRows = Object.entries(app.s.stockMeta).map(([k, v]) => ({ "代码": k, "行业": v }));
+                XLSX.utils.book_append_sheet(w, XLSX.utils.json_to_sheet(metaRows), 'meta');
+                
+                XLSX.writeFile(w, `FundReport_${TODAY()}.xlsx`); 
             },
             
             // [PATCH-002] Lazy Load for Excel Import
@@ -617,10 +628,43 @@
                             // [PATCH-Audit] Fix detection for Chinese headers
                             if (hStr.includes('code') || hStr.includes('代码')) return 'trades'; 
                             if (hStr.includes('partner') || hStr.includes('合伙人')) return 'flows'; 
-                            if (hStr.includes('type') || hStr.includes('类型')) return 'journals'; 
+                            if (hStr.includes('type') || hStr.includes('类型')) return 'journals';
+                            // [PATCH-Meta] Detect meta sheet
+                            if (hStr.includes('行业') || hStr.includes('industry')) return 'stockMeta'; 
                             return null; 
                         }; 
-                        wb.SheetNames.forEach(sheetName => { const ws = wb.Sheets[sheetName]; const type = detectSheet(ws); if (type) { const raw = XLSX.utils.sheet_to_json(ws); const processed = raw.map(row => { const newRow = {}; Object.keys(row).forEach(cnKey => { if (REV_MAP[type][cnKey]) newRow[REV_MAP[type][cnKey]] = row[cnKey]; else newRow[cnKey] = row[cnKey]; }); if (!newRow.id) newRow.id = Utils.uuid(); return newRow; }); app.s[type] = processed; } }); app.s._dirty = { ledger: true, mkt: true }; await app.data.bgSave(); app.logic.recalc(); app.ui.renderAll(); alert(`导入成功`); } catch (err) { alert("Error: " + err.message); } finally { i.value = ''; } }; r.readAsArrayBuffer(i.files[0]); }
+                        
+                        wb.SheetNames.forEach(sheetName => { 
+                            const ws = wb.Sheets[sheetName]; 
+                            const type = detectSheet(ws); 
+                            if (type === 'stockMeta') {
+                                // [PATCH-Meta] Special handling for Object type
+                                const raw = XLSX.utils.sheet_to_json(ws);
+                                const metaObj = {};
+                                raw.forEach(r => {
+                                    const c = r['代码'] || r['code'] || r['Code'];
+                                    const i = r['行业'] || r['industry'] || r['Industry'];
+                                    if(c && i) metaObj[c] = i;
+                                });
+                                app.s.stockMeta = metaObj;
+                            } else if (type) { 
+                                const raw = XLSX.utils.sheet_to_json(ws); 
+                                const processed = raw.map(row => { 
+                                    const newRow = {}; 
+                                    Object.keys(row).forEach(cnKey => { 
+                                        if (REV_MAP[type][cnKey]) newRow[REV_MAP[type][cnKey]] = row[cnKey]; else newRow[cnKey] = row[cnKey]; 
+                                    }); 
+                                    if (!newRow.id) newRow.id = Utils.uuid(); 
+                                    return newRow; 
+                                }); 
+                                app.s[type] = processed; 
+                            } 
+                        }); 
+                        
+                        app.s._dirty = { ledger: true, mkt: true }; await app.data.bgSave(); app.logic.recalc(); app.ui.renderAll(); alert(`导入成功`); 
+                    } catch (err) { alert("Error: " + err.message); } finally { i.value = ''; } 
+                }; r.readAsArrayBuffer(i.files[0]); 
+            }
         },
     
         logic: {
@@ -899,10 +943,11 @@
             _timer: null,
             debouncedFetch: (code, prefix = 'ipt') => { clearTimeout(app.api._timer); app.api._timer = setTimeout(() => app.api.smartFetch(code, prefix), 500); },
             getPrefix: (m, c) => { if (m === 'HK') return 'hk'; if (m === 'US') return 'us'; if (m === 'SH' || m === 'SHB') return 'sh'; if (m === 'SZ' || m === 'SZB') return 'sz'; return (c.startsWith('6') || c.startsWith('5')) ? 'sh' : 'sz'; },
-            smartFetch: (c, p = 'ipt') => { if (!c) return; document.getElementById(p + '-name').innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; const m = app.api.detect(c); const pf = app.api.getPrefix(m, c); app.api.load(`https://qt.gtimg.cn/q=${pf}${c}`, () => { const d = window[`v_${pf}${c}`]; if (d) { const v = d.split('~'); document.getElementById(p + '-name').innerText = v[1]; document.getElementById(p + '-price').value = v[3]; } else { document.getElementById(p + '-name').innerText = '未知'; } }, () => { document.getElementById(p + '-name').innerText = '失败'; }); },
+            smartFetch: (c, p = 'ipt') => { if (!c) return; document.getElementById(p + '-name').innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; const m = app.api.detect(c); const pf = app.api.getPrefix(m, c); app.api.load(`https://qt.gtimg.cn/q=${pf}${c}`, () => { const d = window[`v_${pf}${c}`]; if (d) { const v = d.split('~'); document.getElementById(p + '-name').innerText = v[1]; document.getElementById(p + '-price').value = v[3]; } else { document.getElementById(p + '-name').innerText = '未知'; } }, () => { document.getElementById(p + '-name').innerText = '失败'; }, 'gbk'); },
             updateEstPrice: () => { const v = parseFloat(document.getElementById('qh-value').value) || 0, q = parseFloat(document.getElementById('qh-qty').value) || 0; if (v > 0 && q > 0) document.getElementById('qh-est-price').innerText = (v / q).toFixed(3); },
             updateFx: (s, t) => { const c = document.getElementById(s).value; if (app.s.rates[c]) document.getElementById(t).value = app.s.rates[c].toFixed(3); },
-            load: (s, cb, eb) => { const e = document.createElement('script'); e.src = s; e.onload = () => { cb && cb(); e.remove(); }; e.onerror = () => { eb && eb(); e.remove(); }; document.body.appendChild(e); },
+            // [PATCH-GitHub] Added charset support
+            load: (s, cb, eb, c) => { const e = document.createElement('script'); e.src = s; if(c) e.charset = c; e.onload = () => { cb && cb(); e.remove(); }; e.onerror = () => { eb && eb(); e.remove(); }; document.body.appendChild(e); },
             fetchers: {
                 Tencent: () => new Promise((resolve, reject) => {
                     app.api.load('https://qt.gtimg.cn/q=r_hkHKDCNY,r_usUSDCNY', () => {
@@ -913,7 +958,7 @@
                                 if (hk > 0 && us > 0) resolve({ rates: { USD: us, HKD: hk, CNY: 1 }, src: 'Tencent' }); else reject('Tencent data invalid');
                             } else reject('Tencent var missing');
                         } catch (e) { reject(e); }
-                    }, () => reject('Tencent load failed'));
+                    }, () => reject('Tencent load failed'), 'gbk');
                 }),
                 Sina: () => fetch('https://hq.sinajs.cn/list=fx_susdcny,fx_shkdcny').then(res => res.text()).then(text => {
                     const usData = Sanitizer.parseSina(text.match(/var hq_str_fx_susdcny="([^"]+)"/)?.[0]);
@@ -938,7 +983,13 @@
                 const strategies = { 'auto': ['Tencent', 'Sina', 'Frankfurter', 'YunAPI'], 'tencent': ['Tencent'], 'sina': ['Sina'], 'frank': ['Frankfurter'], 'yun': ['YunAPI'] };
                 const queue = strategies[mode] || strategies['auto'];
                 let fxSuccess = false;
-                for (const provider of queue) { try { const result = await app.api.fetchers[provider](); updateFXUI(result.rates); app.status.fx = { ok: true, src: result.src }; fxSuccess = true; if (showToast) app.ui.toast(`汇率已更新 (${result.src})`); break; } catch (e) { console.warn(`[FX] ${provider} failed:`, e); } }
+                for (const provider of queue) { 
+                    try { 
+                        const result = await app.api.fetchers[provider](); 
+                        updateFXUI(result.rates); app.status.fx = { ok: true, src: result.src }; fxSuccess = true; 
+                        if (showToast) app.ui.toast(`汇率已更新 (${result.src})`); break; 
+                    } catch (e) { console.warn(`[FX] ${provider} failed:`, e); } 
+                }
                 if (!fxSuccess) { app.status.fx = { ok: false, src: 'All Failed' }; if (showToast) app.ui.toast("⚠️ 汇率更新失败，请检查网络或切换接口源"); }
                 const cds = [...new Set(app.s.trades.map(t => t.code))];
                 let qStr = "r_hkHSI,r_sh000300";
@@ -964,8 +1015,8 @@
                             app.s._dirty.mkt = true; 
                             app.logic.recalc(); persistMktUpdates(); app.status.stk = { ok: true, src: 'Sina' }; if (showToast && fxSuccess) app.ui.toast("股票行情已更新 (备用源)");
                         } catch (e) { app.status.stk = { ok: false, src: 'Failed' }; }
-                    }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); });
-                });
+                    }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); }, 'gbk');
+                }, 'gbk');
                 if (app.ui && typeof app.ui.updateEngineStatus === 'function') { app.ui.updateEngineStatus(); }
             }
         }
