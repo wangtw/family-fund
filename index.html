@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- [PATCH-GitHub] 核心修复：No-Referrer 绕过防盗链 -->
     <meta name="referrer" content="no-referrer">
-    <title>合伙基金管理系统 v3.9.6 (GitHub Ultra)</title>
+    <title>合伙基金管理系统 v3.10.1 (Hotfix)</title>
+
 
     <!-- 核心依赖库 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -143,23 +144,27 @@
     
         @media (max-width: 992px) { .top-nav, .controls-right { flex-direction: column; align-items: stretch; } .top-row, .cmd-group { justify-content: space-between; } }
     </style>
+
 </head>
 <body>
 
 <div id="toast-container"></div>
+
 <!-- [PATCH-003] Visual Indicator -->
+
 <div id="save-indicator" class="save-indicator"><i class="fas fa-save"></i> <span>已自动保存</span></div>
 
 <div class="main-container">
     <div class="top-nav">
         <div class="brand-section">
-            <h1>合伙基金管理系统 <span class="ver-badge">v3.9.6</span></h1>
-            <p>GitHub Ultra: Anti-CORS FX & Dual-Source Stock</p>
+            <h1>合伙基金管理系统 <span class="ver-badge">v3.10.1</span></h1>
+            <p>GitHub Ultra: Hotfix Partner Mgmt</p>
         </div>
         <div class="controls-right">
             <div class="top-row">
                 <button class="btn-mini" onclick="app.logic.undo()" title="撤销"><i class="fas fa-undo"></i></button>
                 <button class="btn-mini" onclick="app.api.refresh(true)" title="刷新"><i class="fas fa-sync-alt"></i></button>
+
 
                 <!-- Status Capsule -->
                 <div class="status-capsule" id="status-capsule" onclick="app.ui.showStatusDetail()">
@@ -329,9 +334,11 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- Modals -->
+
 <div class="modal fade" id="statusModal" tabindex="-1"><div class="modal-dialog" style="max-width: 500px;"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title"><i class="fas fa-server me-2"></i>系统健康度</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="status-modal-body" style="max-height: 400px; overflow-y: auto;"><!-- Status content will be injected here --></div></div></div></div>
 <div class="modal fade" id="tradeModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="tradeModal-title">新增交易</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="ipt-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value)"><small id="ipt-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">方向</label><select id="ipt-side" class="form-select"><option value="BUY">买入</option><option value="SELL">卖出</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="ipt-date" class="form-control"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">单价</label><input type="number" id="ipt-price" class="form-control" step="0.001" oninput="app.ui.calcTradeEstimate()"></div><div class="col-6"><label class="form-label fw-bold">数量</label><input type="number" id="ipt-qty" class="form-control" oninput="app.ui.calcTradeEstimate()"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="ipt-fx" class="form-control" placeholder="留空则读取实时汇率"><small class="text-muted" style="font-size:0.7rem;">* 此汇率将永久保存在该笔交易记录中</small></div><div class="mb-3"><label class="form-label fw-bold">佣金 (CNY)</label><input type="number" id="ipt-fee" class="form-control" placeholder="0.00" step="0.01"></div></div><button class="btn btn-primary w-100" id="btn-save-trade" onclick="app.logic.saveTrade()">提交</button><button class="btn btn-danger w-100 mt-2 d-none" id="btn-delete-trade" onclick="app.logic.deleteTrade()">删除此交易</button></div></div></div></div>
 <div class="modal fade" id="quickHoldingModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-bolt me-2"></i>快速持仓录入</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small py-2 px-3 mb-3">将自动生成【初始入金】流水以平衡账目。</div><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="qh-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value, 'qh')"><small id="qh-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">总市值 (CNY)</label><input type="number" id="qh-value" class="form-control" step="0.01" oninput="app.api.updateEstPrice()"></div><div class="col-6"><label class="form-label fw-bold">持股数</label><input type="number" id="qh-qty" class="form-control" step="0.0001" oninput="app.api.updateEstPrice()"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">原币种</label><select id="qh-currency" class="form-select" onchange="app.api.updateFx('qh-currency', 'qh-fx'); app.api.updateEstPrice()"><option value="CNY">CNY</option><option value="USD">USD</option><option value="HKD">HKD</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="qh-date" class="form-control"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="qh-fx" class="form-control" placeholder="切换币种自动填入"><small class="text-muted">* 将锁定为历史汇率</small></div><div class="bg-light p-2 rounded small text-center text-muted">推算单价: <strong id="qh-est-price">--</strong> (原币)</div><button class="btn btn-success w-100 mt-3" onclick="app.logic.addQuickHolding()">录入 (同步生成资金流水)</button></div></div></div></div>
@@ -352,10 +359,17 @@
     </div><button class="btn btn-outline-dark" onclick="app.ui.showModal('partnerModal')"><i class="fas fa-users-cog"></i> 合伙人管理</button><button class="btn btn-outline-secondary" onclick="app.data.backup()">下载备份 (.json)</button><button class="btn btn-outline-secondary" onclick="document.getElementById('file-restore').click()">恢复备份</button><input type="file" id="file-restore" style="display:none" onchange="app.data.restore(this)" accept=".json"><hr><button class="btn btn-outline-success" onclick="app.data.exportXLSX()">导出管理报表 (Excel)</button><button class="btn btn-outline-success" onclick="document.getElementById('file-xlsx').click()">导入 Excel 数据</button><input type="file" id="file-xlsx" style="display:none" onchange="app.data.importXLSX(this)" accept=".xlsx"><button class="btn btn-outline-secondary" onclick="app.ui.openCalib()">现金校准</button><hr><button class="btn btn-danger" onclick="app.data.nuke()">清空数据 (需密码)</button><button class="btn btn-warning" onclick="app.data.loadThinkDemo()">重置为演示数据</button></div></div></div></div></div>
 <div class="modal fade" id="partnerModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">合伙人管理</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small">僵尸账号(本金0)可物理删除；已清盘(本金>0)可隐藏。</div><ul id="mgmt-partner-list" class="list-group mb-3"></ul><div class="input-group"><input type="text" id="ipt-rename-old" class="form-control" placeholder="选择上方名字" readonly><input type="text" id="ipt-rename-new" class="form-control" placeholder="新名字"><button class="btn btn-primary" onclick="app.logic.renamePartner()">改名</button></div></div></div></div></div>
 <div class="modal fade" id="configModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">系统配置</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">应用名称</label><input type="text" id="cfgAppName" class="form-control" placeholder="输入应用名称"></div><div class="mb-3"><label class="form-label">备份提醒阈值（次）</label><input type="number" id="cfgThreshold" class="form-control" placeholder="5" min="1" max="100"><small class="text-muted">操作次数达到此值时提醒备份</small></div><div class="mb-3"><label class="form-label">汇率接口源 (FX Source)</label><select id="cfgFxSource" class="form-select"><option value="auto">⚡ 自动优选 (推荐)</option><option value="tencent">🐧 腾讯财经</option><option value="sina">👁️ 新浪财经</option><option value="frank">🇪🇺 Frankfurter</option><option value="yun">☁️ YunAPI</option></select><small class="text-muted">如果遇到汇率更新失败，可尝试手动切换接口。</small></div><div class="mb-3"><label class="form-label">默认汇率选项</label><div id="cfgRates" class="d-flex gap-3 flex-wrap"><label><input type="checkbox" value="CNY"> CNY</label><label><input type="checkbox" value="USD"> USD</label><label><input type="checkbox" value="EUR"> EUR</label><label><input type="checkbox" value="HKD"> HKD</label><label><input type="checkbox" value="JPY"> JPY</label><label><input type="checkbox" value="GBP"> GBP</label></div></div><div class="mb-3"><label class="form-label">操作指南（支持HTML）</label><textarea id="cfgGuide" rows="5" class="form-control" placeholder="输入操作指南内容，支持HTML标签..."></textarea></div><div class="mb-3"><label class="form-label">避坑手册（支持HTML）</label><textarea id="cfgManual" rows="5" class="form-control" placeholder="输入避坑手册内容，支持HTML标签..."></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-primary" onclick="app.configOps.save()">保存</button><button type="button" class="btn btn-secondary" onclick="app.configOps.reset()">重置</button><button type="button" class="btn btn-info" onclick="app.configOps.export()">导出配置</button><label class="btn btn-success mb-0"><input type="file" hidden accept=".json" onchange="app.configOps.import(event)">导入配置</label></div></div></div></div>
-<div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-book-open me-2"></i>操作指南 v3.9.6</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="nav nav-tabs mb-3" id="guideTabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#g-core">核心逻辑</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-operations">业务操作</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-backup">备份恢复</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-pitfalls">避坑手册</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-faq">常见问题</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-whatsnew">v3.9.6 更新</button></li></ul><div class="tab-content"><div class="tab-pane fade show active" id="g-core"><div class="alert alert-danger mb-4"><strong>🚨 一级警报：生死攸关</strong><hr class="my-2"><ul class="mb-0"><li>本系统 <strong>没有任何云端后台</strong>！所有数据都存储在您当前浏览器的缓存里。</li><li><strong>严禁手动清理浏览器缓存</strong>，否则您的几百万资产记录将瞬间灰飞烟灭。</li><li><strong>[每周五收盘后下载备份]</strong> 是本系统的生存铁律。没做备份等于没做账。</li></ul></div><div class="card mb-3"><div class="card-body"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-brain me-2"></i>30秒看懂"披萨理论"</h6><p class="mb-2">在乱点按钮之前，先理解系统的"大脑"是怎么思考的，防止你觉得系统算错了。</p><ul><li><strong>总资产 (AUM)</strong> = 你的现金余额 + 所有股票当前的市值。</li><li><strong>份额 (Shares)</strong> = 这是一个"绝对数量"，代表你拥有的权益份数。就像你拥有 <strong>5块</strong> 披萨。</li><li><strong>净值 (NAV)</strong> = <strong>1块</strong> 披萨现在值多少钱。<ul><li>系统公式：<code class="bg-light px-2 rounded">净值 = 总资产 / 总份额</code></li></ul></li><li><strong>赚钱逻辑</strong>：你的<strong>份额数量</strong>通常是不变的（除非你加钱买份额或提钱卖份额）。但随着股票涨跌，<strong>净值</strong>会变大变小，你的总资产（<code>份额</code> x <code>净值</code>）也就随之波动。</li></ul></div></div></div><div class="tab-pane fade" id="g-operations"><h5 class="fw-bold text-primary mb-4">📅 每周五的标准作业流程</h5><div class="alert alert-info"><i class="fas fa-plane-departure me-2"></i>请像飞机起飞检查一样，按顺序执行这 3 步。</div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-primary"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-power-off me-2"></i>Step 1：启动与健康检查</div><div class="card-body"><ol><li><strong>打开文件</strong>：双击 <code>合伙基金管理系统 v3.9.6.html</code>。</li><li><strong>看右上角胶囊状态</strong>：<ul><li>🟢 <strong>绿色 (系统正常)</strong>：汇率和股价都更新了，可以开始干活。</li><li>🔴 <strong>红色/黄色</strong>：断网或接口卡了。<ul><li><em>动作</em>：点击右上角的刷新按钮。或者点击胶囊查看是哪个数据源挂了。</li></ul></li></ul></li><li><strong>看左上角总资产</strong>：确认数字不是 0。</li></ol></div></div></div><div class="col-md-8"><div class="card h-100 border-warning"><div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-edit me-2"></i>Step 2：录入本周发生的变动</div><div class="card-body"><p class="small text-muted mb-3">根据实际情况，选择以下对应的场景操作：</p><h6 class="fw-bold mb-2">场景 A：新增合伙人</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：在输入框里直接打字输入新名字（系统会自动记录）。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果这是基金成立的第一笔钱，<code>当时净值</code> 默认为 1.0000。如果不是，系统会自动抓取当前净值。</li></ul></li><li><strong>确认</strong>。</li></ol><hr><h6 class="fw-bold mb-2">场景 B：资金注入</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：下拉选择老合伙人的名字。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果是补录以前的入金，<strong>必须</strong>修改日期，并填入那一天的历史净值。否则会发生"时空扭曲"，导致份额计算错误。</li></ul></li></ol><hr><h6 class="fw-bold mb-2">场景 C：资金赎回</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：选择要提钱的人。</li><li><strong>类型</strong>：选择"出金"。</li><li><strong>金额</strong>：输入他要提走的钱。</li><li>⚠️ <strong>系统限制</strong>：出金金额不得超过权益市值。</li></ol><hr><h6 class="fw-bold mb-2">场景 D：买卖股票</h6><button class="btn btn-info btn-sm mb-2">🔵 交易</button><ol class="small"><li><strong>检查现金</strong>：确保左侧面板的 <code>现金</code> 余额够买。</li><li><strong>代码</strong>：输入代码（如 <code>00700</code>、<code>600519</code>、<code>AAPL</code>）。<strong>停手 1 秒！</strong> 等下面显示出股票名称再继续。</li><li><strong>方向/价格/数量</strong>：如实填写。</li><li><strong>汇率</strong>：别动它，系统会自动填好。</li><li><strong>提交</strong>。</li></ol></div></div></div><div class="card border-success mt-3"><div class="card-header bg-success text-white fw-bold"><i class="fas fa-save me-2"></i>Step 3：备份 (Backup) —— <strong>最重要的一步</strong></div><div class="card-body"><p class="fw-bold text-danger mb-3">不做这一步，前面的功夫可能白费。</p><ol><li>点击右上角的 <strong>⚙️ 设置</strong>。</li><li>点击 <strong>"下载备份 (.json)"</strong>。</li><li>浏览器会下载一个类似 <code>Backup_2026-01-28.json</code> 的文件。</li><li><strong>动作</strong>：将此文件发送给自己的 <strong>微信文件传输助手</strong>、<strong>邮箱</strong> 或 <strong>网盘</strong>。<strong>别只放在桌面上！</strong></li></ol></div></div></div><div class="tab-pane fade" id="g-backup"><h5 class="fw-bold text-primary mb-4">💾 防灾备份指南</h5><div class="row g-4"><div class="col-md-6"><div class="card h-100"><div class="card-header bg-info text-white fw-bold"><i class="fas fa-clock me-2"></i>标准备份频率</div><div class="card-body"><ul class="mb-0"><li><strong>每周五下午 15:05</strong> (A股收盘后) -必做备份</li><li><strong>每月底</strong> - 归档备份（建议保留每月最后一个周五的备份）</li></ul></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-download me-2"></i>导出步骤</div><div class="card-body"><ol class="mb-0"><li>点击右上角 <strong>【设置】</strong>。</li><li>点击 <strong>【下载备份 (.json)】</strong>。</li><li>文件会自动下载，文件名包含今天的日期。</li><li><strong>把它存到网盘/微信收藏/你对象的聊天记录里，别只放在桌面上！</strong></li></ol></div></div></div></div><div class="tab-pane fade" id="g-whatsnew"><div class="alert alert-success mb-4"><i class="fas fa-rocket me-2"></i><strong>v3.9.6 (GitHub Ultra) 更新说明</strong></div><div class="row g-4"><div class="col-md-4"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold">Patch-FX CORS</div><div class="card-body small"><p>解决新浪汇率跨域。</p><p>将 Sina 汇率获取方式从 `fetch` 升级为 `script` 注入，完美适配 GitHub Pages。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-success text-white fw-bold">Patch-Stock Dual</div><div class="card-body small"><p>双源股票行情。</p><p>增加 `ig50.gtimg.cn` 作为备用行情源，防止主接口被墙或限流。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-warning text-dark fw-bold">Patch-XLSX Meta</div><div class="card-body small"><p>Excel 完整备份。</p><p>导出文件现包含行业分类表，实现数据的 100% 闭环备份。</p></div></div></div></div></div></div></div></div></div></div>
+<div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-book-open me-2"></i>操作指南 v3.10.1</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="nav nav-tabs mb-3" id="guideTabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#g-core">核心逻辑</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-operations">业务操作</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-backup">备份恢复</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-pitfalls">避坑手册</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-faq">常见问题</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-whatsnew">v3.10.1 更新</button></li></ul><div class="tab-content"><div class="tab-pane fade show active" id="g-core"><div class="alert alert-danger mb-4"><strong>🚨 一级警报：生死攸关</strong><hr class="my-2"><ul class="mb-0"><li>本系统 <strong>没有任何云端后台</strong>！所有数据都存储在您当前浏览器的缓存里。</li><li><strong>严禁手动清理浏览器缓存</strong>，否则您的几百万资产记录将瞬间灰飞烟灭。</li><li><strong>[每周五收盘后下载备份]</strong> 是本系统的生存铁律。没做备份等于没做账。</li></ul></div><div class="card mb-3"><div class="card-body"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-brain me-2"></i>30秒看懂"披萨理论"</h6><p class="mb-2">在乱点按钮之前，先理解系统的"大脑"是怎么思考的，防止你觉得系统算错了。</p><ul><li><strong>总资产 (AUM)</strong> = 你的现金余额 + 所有股票当前的市值。</li><li><strong>份额 (Shares)</strong> = 这是一个"绝对数量"，代表你拥有的权益份数。就像你拥有 <strong>5块</strong> 披萨。</li><li><strong>净值 (NAV)</strong> = <strong>1块</strong> 披萨现在值多少钱。<ul><li>系统公式：<code class="bg-light px-2 rounded">净值 = 总资产 / 总份额</code></li></ul></li><li><strong>赚钱逻辑</strong>：你的<strong>份额数量</strong>通常是不变的（除非你加钱买份额或提钱卖份额）。但随着股票涨跌，<strong>净值</strong>会变大变小，你的总资产（<code>份额</code> x <code>净值</code>）也就随之波动。</li></ul></div></div></div><div class="tab-pane fade" id="g-operations"><h5 class="fw-bold text-primary mb-4">📅 每周五的标准作业流程</h5><div class="alert alert-info"><i class="fas fa-plane-departure me-2"></i>请像飞机起飞检查一样，按顺序执行这 3 步。</div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-primary"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-power-off me-2"></i>Step 1：启动与健康检查</div><div class="card-body"><ol><li><strong>打开文件</strong>：双击 <code>合伙基金管理系统 v3.10.1.html</code>。</li><li><strong>看右上角胶囊状态</strong>：<ul><li>🟢 <strong>绿色 (系统正常)</strong>：汇率和股价都更新了，可以开始干活。</li><li>🔴 <strong>红色/黄色</strong>：断网或接口卡了。<ul><li><em>动作</em>：点击右上角的刷新按钮。或者点击胶囊查看是哪个数据源挂了。</li></ul></li></ul></li><li><strong>看左上角总资产</strong>：确认数字不是 0。</li></ol></div></div></div><div class="col-md-8"><div class="card h-100 border-warning"><div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-edit me-2"></i>Step 2：录入本周发生的变动</div><div class="card-body"><p class="small text-muted mb-3">根据实际情况，选择以下对应的场景操作：</p><h6 class="fw-bold mb-2">场景 A：新增合伙人</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：在输入框里直接打字输入新名字（系统会自动记录）。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果这是基金成立的第一笔钱，<code>当时净值</code> 默认为 1.0000。如果不是，系统会自动抓取当前净值。</li></ul></li><li><strong>确认</strong>。</li></ol><hr><h6 class="fw-bold mb-2">场景 B：资金注入</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：下拉选择老合伙人的名字。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果是补录以前的入金，<strong>必须</strong>修改日期，并填入那一天的历史净值。否则会发生"时空扭曲"，导致份额计算错误。</li></ul></li></ol><hr><h6 class="fw-bold mb-2">场景 C：资金赎回</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：选择要提钱的人。</li><li><strong>类型</strong>：选择"出金"。</li><li><strong>金额</strong>：输入他要提走的钱。</li><li>⚠️ <strong>系统限制</strong>：出金金额不得超过权益市值。</li></ol><hr><h6 class="fw-bold mb-2">场景 D：买卖股票</h6><button class="btn btn-info btn-sm mb-2">🔵 交易</button><ol class="small"><li><strong>检查现金</strong>：确保左侧面板的 <code>现金</code> 余额够买。</li><li><strong>代码</strong>：输入代码（如 <code>00700</code>、<code>600519</code>、<code>AAPL</code>）。<strong>停手 1 秒！</strong> 等下面显示出股票名称再继续。</li><li><strong>方向/价格/数量</strong>：如实填写。</li><li><strong>汇率</strong>：别动它，系统会自动填好。</li><li><strong>提交</strong>。</li></ol></div></div></div><div class="card border-success mt-3"><div class="card-header bg-success text-white fw-bold"><i class="fas fa-save me-2"></i>Step 3：备份 (Backup) —— <strong>最重要的一步</strong></div><div class="card-body"><p class="fw-bold text-danger mb-3">不做这一步，前面的功夫可能白费。</p><ol><li>点击右上角的 <strong>⚙️ 设置</strong>。</li><li>点击 <strong>"下载备份 (.json)"</strong>。</li><li>浏览器会下载一个类似 <code>Backup_2026-01-28.json</code> 的文件。</li><li><strong>动作</strong>：将此文件发送给自己的 <strong>微信文件传输助手</strong>、<strong>邮箱</strong> 或 <strong>网盘</strong>。<strong>别只放在桌面上！</strong></li></ol></div></div></div><div class="tab-pane fade" id="g-backup"><h5 class="fw-bold text-primary mb-4">💾 防灾备份指南</h5><div class="row g-4"><div class="col-md-6"><div class="card h-100"><div class="card-header bg-info text-white fw-bold"><i class="fas fa-clock me-2"></i>标准备份频率</div><div class="card-body"><ul class="mb-0"><li><strong>每周五下午 15:05</strong> (A股收盘后) -必做备份</li><li><strong>每月底</strong> - 归档备份（建议保留每月最后一个周五的备份）</li></ul></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-download me-2"></i>导出步骤</div><div class="card-body"><ol class="mb-0"><li>点击右上角 <strong>【设置】</strong>。</li><li>点击 <strong>【下载备份 (.json)】</strong>。</li><li>文件会自动下载，文件名包含今天的日期。</li><li><strong>把它存到网盘/微信收藏/你对象的聊天记录里，别只放在桌面上！</strong></li></ol></div></div></div></div><div class="tab-pane fade" id="g-whatsnew"><div class="alert alert-success mb-4"><i class="fas fa-rocket me-2"></i><strong>v3.10.1 (Hotfix) 更新说明</strong></div><div class="row g-4"><div class="col-md-4"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold">Patch-Hotfix</div><div class="card-body small"><p>修复合伙人管理错误。</p><p>找回了丢失的 `renderPartnerMgmt` 函数，现在合伙人管理面板可以正常使用了。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-success text-white fw-bold">Patch-Smart Layout</div><div class="card-body small"><p>环形图智能布局。</p><p>1. 自动过滤 0 资产；<br>2. 采用“交错排序算法”重排扇区，防止小比例标签挤在一起，提升美观度。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-warning text-dark fw-bold">Patch-No Benchmark</div><div class="card-body small"><p>移除基准线。</p><p>应要求移除了 60/40 基准线，图表现在更加聚焦于基金本身的净值走势。</p></div></div></div></div></div></div></div></div></div></div>
+
 
 <script>
+    // Linus's Law: "Talk is cheap. Show me the code."
+    // This edition focuses on Clean Separation of Concerns.
+    // Logic handles Numbers. UI handles Strings. Never shall they meet in the kernel.
+
+
     const Calc = {
+        // Core Math Wrappers
         add: (a, b) => new Decimal(a || 0).plus(b || 0).toNumber(),
         sub: (a, b) => new Decimal(a || 0).minus(b || 0).toNumber(),
         mul: (a, b) => new Decimal(a || 0).times(b || 0).toNumber(),
@@ -363,12 +377,9 @@
             const _b = new Decimal(b || 0);
             return _b.isZero() ? 0 : new Decimal(a || 0).div(_b).toNumber();
         },
-        fmtMoney: (n) => new Decimal(n || 0).toFixed(2, Decimal.ROUND_HALF_UP),
-        fmtShare: (n) => new Decimal(n || 0).toFixed(4, Decimal.ROUND_HALF_UP),
-        fmtNav: (n) => new Decimal(n || 0).toFixed(4, Decimal.ROUND_HALF_UP),
         prec: (n) => new Decimal(n || 0).toNumber()
     };
-
+    
     const Utils = {
         escape: (str) => {
             if (typeof str !== 'string') return str;
@@ -386,23 +397,15 @@
         }
     };
     
-    const Sanitizer = {
-        parseTencent: (str) => {
-            if (!str || str.length < 10) return null;
-            const parts = str.split('~');
-            if (parts.length < 5) return null;
-            return { price: parseFloat(parts[3]) || 0, prev: parseFloat(parts[4]) || 0 };
-        },
-        parseSina: (str) => {
-            if (!str || str.length < 10) return null;
-            const matches = str.match(/"([^"]+)"/);
-            if (!matches) return null;
-            const parts = matches[1].split(',');
-            if (parts.length < 4) return null;
-            return { price: parseFloat(parts[3]) || parseFloat(parts[1]) || 0, prev: parseFloat(parts[2]) || 0 };
-        }
+    // UI Formatting Helpers - STRICTLY UI LAYER
+    const FMT = {
+        money: (n, c = 'CNY') => { const s = { 'CNY': '¥', 'USD': '$', 'HKD': 'HK$' } [c] || c; return s + new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 2 }).format(n) },
+        val: n => new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 3 }).format(n),
+        pct: n => (n * 100).toFixed(2) + '%',
+        nav: n => new Decimal(n || 0).toFixed(4, Decimal.ROUND_HALF_UP)
     };
     
+    // Constant Definitions
     Chart.defaults.font.family = "'Segoe UI','PingFang SC',sans-serif";
     Chart.defaults.color = '#64748b';
     Chart.defaults.plugins.legend.display = false;
@@ -430,13 +433,7 @@
         return `${code}.${mkt.suffix}`;
     };
     
-    const FMT = {
-        money: (n, c = 'CNY') => { const s = { 'CNY': '¥', 'USD': '$', 'HKD': 'HK$' } [c] || c; return s + new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 2 }).format(n) },
-        val: n => new Intl.NumberFormat('zh-CN', { minimumFractionDigits: 3 }).format(n),
-        pct: n => (n * 100).toFixed(2) + '%',
-        nav: n => Calc.fmtNav(n)
-    };
-    
+    // Field Mappings for Import/Export
     const FIELD_MAP = {
         trades: { id: 'ID', date: '日期', code: '代码', name: '名称', market: '市场', side: '方向', price: '价格', qty: '数量', fx: '汇率' },
         flows: { id: 'ID', date: '日期', partner: '合伙人', type: '类型', amount: '金额', shares: '份额', note: '备注' },
@@ -444,6 +441,7 @@
     };
     const REV_MAP = {}; Object.keys(FIELD_MAP).forEach(k => { REV_MAP[k] = {}; Object.entries(FIELD_MAP[k]).forEach(([en, cn]) => REV_MAP[k][cn] = en); });
     
+    // Infrastructure
     const db = new Dexie(DB_NAME);
     db.version(1).stores({ trades: 'id, date, code', flows: 'id, date, partner', journals: 'id, date', kv: 'key' });
     
@@ -456,9 +454,178 @@
         fxSource: 'auto'
     };
     
+    // The Kernel: Pure Calculation Logic
+    // No side effects, no string formatting. Just numbers.
+    const Kernel = {
+        calcLedger: (trades, flows, journals, rates) => {
+            let cash = 0, totalShares = 0, totalPrinc = 0, totalRedeem = 0;
+            const pMap = {}, holdings = {}, flowLog = [];
+    
+            // 1. Process Flows (Partner Capital)
+            [...flows].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(f => {
+                if (!pMap[f.partner]) pMap[f.partner] = { shares: 0, cost: 0, flows: [], date: f.date, gross: 0 };
+                const amt = Calc.prec(f.amount);
+                const sign = f.type === 'DEPOSIT' ? 1 : -1;
+                
+                if (f.type === 'DEPOSIT') {
+                    pMap[f.partner].shares = Calc.add(pMap[f.partner].shares, f.shares);
+                    pMap[f.partner].cost = Calc.add(pMap[f.partner].cost, amt);
+                    pMap[f.partner].gross = Calc.add(pMap[f.partner].gross, amt);
+                    cash = Calc.add(cash, amt);
+                    totalPrinc = Calc.add(totalPrinc, amt);
+                } else {
+                    pMap[f.partner].shares = Calc.sub(pMap[f.partner].shares, f.shares);
+                    pMap[f.partner].cost = Calc.sub(pMap[f.partner].cost, amt);
+                    cash = Calc.sub(cash, amt);
+                    totalPrinc = Calc.sub(totalPrinc, amt);
+                    totalRedeem = Calc.add(totalRedeem, amt);
+                }
+                
+                const flowVal = -1 * sign * amt;
+                pMap[f.partner].flows.push({ d: f.date, v: flowVal }); 
+                flowLog.push({ d: f.date, v: flowVal });
+                totalShares = Calc.add(totalShares, sign * f.shares);
+            });
+    
+            // 2. Process Journals (Operational Cash)
+            journals.forEach(j => {
+                const amt = Calc.prec(j.amount);
+                const isIncome = ['DIVIDEND', 'INTEREST', 'ADJUST_ADD'].includes(j.type);
+                cash = Calc.add(cash, isIncome ? amt : -amt);
+            });
+    
+            // 3. Process Trades (Investment Portfolio)
+            [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                const k = `${t.market}:${t.code}`;
+                if (!holdings[k]) holdings[k] = { qty: 0, cost: 0, costOrig: 0, name: t.name, mkt: t.market, code: t.code };
+                
+                // Fallback fx if missing in trade record
+                const fx = t.fx || rates[MARKETS[t.market || 'US'].c] || 1;
+                const amt = Calc.mul(Calc.mul(t.price, t.qty), fx);
+                const amtOrig = Calc.mul(t.price, t.qty);
+    
+                if (t.side === 'BUY') {
+                    holdings[k].qty = Calc.add(holdings[k].qty, t.qty);
+                    holdings[k].cost = Calc.add(holdings[k].cost, amt);
+                    holdings[k].costOrig = Calc.add(holdings[k].costOrig, amtOrig);
+                    cash = Calc.sub(cash, amt);
+                } else {
+                    // Average Cost Method
+                    const avg = holdings[k].qty > 0 ? Calc.div(holdings[k].cost, holdings[k].qty) : 0;
+                    const avgOrig = holdings[k].qty > 0 ? Calc.div(holdings[k].costOrig, holdings[k].qty) : 0;
+                    
+                    holdings[k].qty = Calc.sub(holdings[k].qty, t.qty);
+                    holdings[k].cost = Calc.sub(holdings[k].cost, Calc.mul(avg, t.qty));
+                    holdings[k].costOrig = Calc.sub(holdings[k].costOrig, Calc.mul(avgOrig, t.qty));
+                    cash = Calc.add(cash, amt);
+                }
+                
+                // Cleanup tiny residuals
+                if (holdings[k].qty < 0.0001) { 
+                    holdings[k].qty = 0; holdings[k].cost = 0; holdings[k].costOrig = 0; 
+                }
+            });
+    
+            return { cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog };
+        },
+    
+        calcAssets: (holdings, mktData, rates, meta) => {
+            let stockVal = 0, dayPnl = 0; 
+            const assetList = [], industries = {};
+            
+            Object.values(holdings).forEach(h => {
+                if (h.qty < 0.001) return;
+                
+                const mktKey = h.mkt || 'US';
+                const mktConf = MARKETS[mktKey] || MARKETS.US;
+                const fx = rates[mktConf.c] || 1;
+                
+                // Mark to Market
+                const quote = mktData[`${h.mkt}:${h.code}`] || { cur: 0, pre: 0 };
+                const price = quote.cur > 0 ? quote.cur : (h.cost / h.qty / fx);
+                const prevClose = quote.pre > 0 ? quote.pre : price;
+                
+                const val = Calc.mul(Calc.mul(h.qty, price), fx);
+                stockVal = Calc.add(stockVal, val);
+                dayPnl += (price - prevClose) * h.qty * fx;
+                
+                // Industry aggregation
+                const ind = meta[h.code] || '未分类';
+                if (!industries[ind]) industries[ind] = 0; 
+                industries[ind] += val;
+    
+                // Asset derivation
+                assetList.push({
+                    ...h,
+                    price, val, ind,
+                    costAvg: Calc.div(h.cost, h.qty),
+                    costAvgOrig: Calc.div(h.costOrig, h.qty), // Original currency cost
+                    pl: val - h.cost,
+                    plPct: h.cost > 0 ? (val - h.cost) / h.cost : 0,
+                    dayPct: prevClose > 0 ? (price - prevClose) / prevClose : 0
+                });
+            });
+            
+            return { stockVal, dayPnl, assetList, industries };
+        },
+    
+        xirr: (values, guess = 0.1) => {
+            if (values.length < 2) return 0;
+            const d0 = new Date(values[0].d);
+            let x = guess;
+            for (let i = 0; i < 100; i++) {
+                let fx = 0, dfx = 0;
+                for (let o of values) {
+                    const dt = (new Date(o.d) - d0) / 86400000 / 365;
+                    const e = Math.pow(1 + x, dt);
+                    fx += o.v / e;
+                    dfx -= dt * o.v / (e * (1 + x));
+                }
+                if (Math.abs(dfx) < 1e-5) break;
+                x -= fx / dfx;
+            }
+            return isFinite(x) ? x : 0;
+        },
+    
+        analyzeStats: (hist) => {
+            if (!hist || hist.length < 10) return { maxDD: 0, ddPeriod: '--', alpha: '--', beta: '--', sharpe: '--' };
+            let maxNav = 0, maxDD = 0, peakDate = '', valleyDate = '', tempPeakDate = '';
+            
+            hist.forEach(h => {
+                const nav = h.n; // Assuming number
+                if (nav > maxNav) { maxNav = nav; tempPeakDate = h.d; }
+                const dd = (nav - maxNav) / maxNav;
+                if (dd < maxDD) { maxDD = dd; peakDate = tempPeakDate; valleyDate = h.d; }
+            });
+            return { maxDD, ddPeriod: `${peakDate} ~ ${valleyDate}` };
+        }
+    };
+    
+    // Main App Object
     const app = {
-        s: { trades: [], flows: [], journals: [], mkt: {}, rates: { USD: 7.2, HKD: 0.92, CNY: 1 }, hiddenPartners: [], stockMeta: {}, bench: { hsi: 0, csi: 0 }, config: { appName: '合伙基金管理系统', backupThreshold: 5, defaultRates: ['CNY', 'USD', 'HKD'], guide: '', manual: '', fxSource: 'auto' }, navHist: [], _ts: 0, _dirty: { ledger: true, mkt: true } },
-        c: { nav: 1, aum: 0, cash: 0, shares: 0, hist: [], partners: [], allPartners: [], assets: [], monthlyReturns: [], totalRedeem: 0, dayPnl: 0, dayNavChg: 0, maxDD: 0, ddPeriod: '', alpha: '--', beta: '--', sharpe: '--', industries: {} },
+        // App State (Persistent + Volatile)
+        s: { 
+            trades: [], flows: [], journals: [], 
+            mkt: {}, rates: { USD: 7.2, HKD: 0.92, CNY: 1 }, 
+            hiddenPartners: [], stockMeta: {}, 
+            bench: { hsi: 0, csi: 0 }, 
+            config: DEFAULT_CONFIG, 
+            navHist: [], 
+            _ts: 0, 
+            _dirty: { ledger: true, mkt: true } 
+        },
+        
+        // Calculated State (Pure Numbers)
+        c: { 
+            nav: 1, aum: 0, cash: 0, shares: 0, 
+            hist: [], partners: [], allPartners: [], assets: [], 
+            monthlyReturns: [], totalRedeem: 0, 
+            dayPnl: 0, dayNavChg: 0, 
+            maxDD: 0, ddPeriod: '', 
+            alpha: '--', beta: '--', sharpe: '--', 
+            industries: {} 
+        },
+        
         status: { fx: { ok: false, src: '' }, stk: { ok: false, src: '' }, time: '--' },
         charts: {}, prevS: null, uiSort: { k: null, d: 1 },
         _memo: { hash: '', data: null }, _searchTimer: null, _lock: { active: false, timestamp: 0 }, _saveTimer: null, _cache: { ledger: null },
@@ -484,7 +651,7 @@
                 app.api.refresh(true);
             },
             apply: () => {
-                if (app.s.config.appName) { document.title = app.s.config.appName + " v3.9.6"; const h1 = document.querySelector('.brand-section h1'); if (h1) h1.innerHTML = `${app.s.config.appName} <span class="ver-badge">v3.9.6</span>`; }
+                if (app.s.config.appName) { document.title = app.s.config.appName + " v3.10.1"; const h1 = document.querySelector('.brand-section h1'); if (h1) h1.innerHTML = `${app.s.config.appName} <span class="ver-badge">v3.10.1</span>`; }
             },
             reset: () => { if (!confirm('重置所有配置为默认值？')) return; app.s.config = { ...DEFAULT_CONFIG }; document.getElementById('cfgAppName').value = DEFAULT_CONFIG.appName; document.getElementById('cfgThreshold').value = DEFAULT_CONFIG.backupThreshold; document.querySelectorAll('#cfgRates input').forEach(cb => cb.checked = DEFAULT_CONFIG.defaultRates.includes(cb.value)); document.getElementById('cfgGuide').value = ''; document.getElementById('cfgManual').value = ''; document.getElementById('cfgFxSource').value = 'auto'; },
             open: () => {
@@ -508,7 +675,17 @@
                 Object.keys(localStorage).forEach(k => { if (k.startsWith('FM_MIRROR_')) { try { mirror = JSON.parse(localStorage.getItem(k)); } catch (e) {} } });
                 if (mirror && mirror.trades && mirror.trades.length > 0) { await app.data.restoreSnapshot(mirror); app.ui.toast("⚠️ 检测到主数据库为空，已从缓存镜像自动恢复数据"); } else { await app.data.loadFromDB(); }
             } else { await app.data.loadFromDB(); }
-            if (app.s.navHist.length === 0) { const lsHist = localStorage.getItem('FM_NAV_HIST'); if (lsHist) { try { app.s.navHist = JSON.parse(lsHist); await db.kv.put({ key: 'navHist', val: app.s.navHist }); } catch (e) { console.warn("Legacy history migration failed", e); } } }
+            
+            // Legacy Migration: Ensure navHist uses numbers
+            if (app.s.navHist.length > 0 && typeof app.s.navHist[0].a === 'string') {
+                console.log("Migrating legacy navHist to numbers...");
+                app.s.navHist.forEach(h => {
+                     // Strip non-numeric and parse
+                     if (typeof h.a === 'string') h.a = parseFloat(h.a.replace(/[^\d.-]/g, ''));
+                });
+                app.s._dirty.ledger = true;
+            }
+            
             if (!app.s._ts) app.s._ts = Date.now();
             await app.configOps.load(); app.configOps.apply();
             app.logic.recalc(); app.ui.renderAll();
@@ -582,11 +759,28 @@
             loadThinkDemo: async () => {
                 if (prompt("请输入密码 (默认123456789)") !== "123456789") return;
                 if (!confirm("⚠️ 重置为演示数据？(覆盖现有)")) return;
-                const d = '2025-01-03';
-                const flows = [ { id: Utils.uuid(), date: d, partner: '小家', type: 'DEPOSIT', amount: 2138402.17, shares: 2138402.17 }, { id: Utils.uuid(), date: d, partner: '老妈', type: 'DEPOSIT', amount: 190877.51, shares: 190877.51 }, { id: Utils.uuid(), date: d, partner: '女儿小金鹅', type: 'DEPOSIT', amount: 130995.43, shares: 130995.43 }, { id: Utils.uuid(), date: d, partner: '老A', type: 'DEPOSIT', amount: 0, shares: 0 }, { id: Utils.uuid(), date: d, partner: '老D', type: 'DEPOSIT', amount: 0, shares: 0 } ];
-                const trades = [ { id: Utils.uuid(), date: d, code: '00700', name: '腾讯控股', market: 'HK', side: 'BUY', price: 405.00, qty: 2500, fx: 0.92 }, { id: Utils.uuid(), date: d, code: '600519', name: '贵州茅台', market: 'SH', side: 'BUY', price: 1405.00, qty: 400, fx: 1.0 }, { id: Utils.uuid(), date: d, code: '000858', name: '五粮液', market: 'SZ', side: 'BUY', price: 130.00, qty: 400, fx: 1.0 }, { id: Utils.uuid(), date: d, code: '200596', name: '古井贡B', market: 'SZB', side: 'BUY', price: 105.00, qty: 2000, fx: 0.92 }, { id: Utils.uuid(), date: d, code: '02020', name: '安踏体育', market: 'HK', side: 'BUY', price: 80.00, qty: 800, fx: 0.92 }, { id: Utils.uuid(), date: d, code: '01066', name: '威高股份', market: 'HK', side: 'BUY', price: 5.50, qty: 16400, fx: 0.92 } ];
-                const meta = { "00700": "互联网", "600519": "白酒", "000858": "白酒", "200596": "白酒", "02020": "消费", "01066": "医疗" };
-                app.s.bench = { hsi: 17190, csi: 3870 }; app.s.flows = flows; app.s.trades = trades; app.s.journals = []; app.s.stockMeta = meta; app.s.navHist = [];
+                const d = '2026-02-03';
+                const flows = [
+                    { id: Utils.uuid(), date: d, partner: '女儿小金鹅', type: 'DEPOSIT', amount: 151670.88, shares: 151670.88 },
+                    { id: Utils.uuid(), date: d, partner: '小家', type: 'DEPOSIT', amount: 1983099.00, shares: 1983099.00 },
+                    { id: Utils.uuid(), date: d, partner: '老妈', type: 'DEPOSIT', amount: 190877.51, shares: 190877.51 }
+                ];
+                const trades = [
+                    { id: Utils.uuid(), date: d, code: '200596', name: '古井贡B', market: 'SZB', side: 'BUY', price: 83.00, qty: 2000, fx: 0.8876 },
+                    { id: Utils.uuid(), date: d, code: '02020', name: '安踏体育', market: 'HK', side: 'BUY', price: 77.80, qty: 1600, fx: 0.8876 },
+                    { id: Utils.uuid(), date: d, code: '01066', name: '威高股份', market: 'HK', side: 'BUY', price: 5.09, qty: 16400, fx: 0.8876 },
+                    { id: Utils.uuid(), date: d, code: '000858', name: '五粮液', market: 'SZ', side: 'BUY', price: 107.28, qty: 400, fx: 1.0 },
+                    { id: Utils.uuid(), date: d, code: '00700', name: '腾讯控股', market: 'HK', side: 'BUY', price: 581.00, qty: 2500, fx: 0.8876 },
+                    { id: Utils.uuid(), date: d, code: '600519', name: '贵州茅台', market: 'SH', side: 'BUY', price: 1474.92, qty: 400, fx: 1.0 },
+                    { id: Utils.uuid(), date: d, code: '200625', name: '长安B', market: 'SZB', side: 'BUY', price: 3.93, qty: 700, fx: 0.8876 },
+                    { id: Utils.uuid(), date: d, code: '159915', name: '创业板ETF易方达', market: 'SZ', side: 'BUY', price: 3.313, qty: 1200, fx: 1.0 }
+                ];
+                const meta = {
+                    "200596": "白酒", "02020": "消费", "01066": "医疗", "000858": "白酒",
+                    "00700": "互联网", "600519": "白酒", "200625": "汽车", "159915": "指数"
+                };
+                app.s.bench = { hsi: 17190, csi: 3870 }; 
+                app.s.flows = flows; app.s.trades = trades; app.s.journals = []; app.s.stockMeta = meta; app.s.navHist = [];
                 app.s._dirty = { ledger: true, mkt: true };
                 await app.data.bgSave(); app.logic.recalc(); app.ui.toast("Think演示数据已加载");
             },
@@ -670,107 +864,130 @@
         logic: {
             undo: async () => { try { await app.acquireLock(); const snap = await app.data.getUndoSnapshot(); if (snap && confirm("⚠️ 撤销上一步？")) { await app.data.restoreSnapshot(snap); app.ui.toast("已撤销"); } } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
             saveBenchConfig: async () => { const hsi = parseFloat(document.getElementById('cfg-bench-hsi').value); const csi = parseFloat(document.getElementById('cfg-bench-csi').value); app.s.bench = { hsi: hsi || 0, csi: csi || 0 }; await app.data.bgSave(); app.ui.toast("已保存"); app.logic.recalc(); },
+            
+            // REFACTORED: The "Linus" Recalc Function
+            // 1. Separation of concerns: Data vs UI
+            // 2. Pure function composition
+            // 3. No string pollution in state
             recalc: () => {
-                // Phase 3: Dirty Flags Performance Optimization
                 const s = app.s;
+                // Dirty checking is now only for persistence optimization, not logic skipping
+                // because logic is fast enough when pure.
                 if (!s._dirty) s._dirty = { ledger: true, mkt: true };
                 
-                let cash = 0, totalShares = 0, totalPrinc = 0, totalRedeem = 0;
-                let pMap = {}, holdings = {}, flowLog = [];
-    
-                // LAYER 1: Ledger (Heavy Calculation) - Cached
+                // Phase 1: Ledger (Base Financials)
+                // Use cached calculation if ledger hasn't changed to save CPU
                 if (s._dirty.ledger || !app._cache.ledger) {
-                    [...s.flows].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(f => {
-                        if (!pMap[f.partner]) pMap[f.partner] = { shares: 0, cost: 0, flows: [], date: f.date, gross: 0 };
-                        const amt = Calc.prec(f.amount);
-                        if (f.type === 'DEPOSIT') {
-                            pMap[f.partner].shares = Calc.add(pMap[f.partner].shares, f.shares);
-                            pMap[f.partner].cost = Calc.add(pMap[f.partner].cost, amt);
-                            pMap[f.partner].gross = Calc.add(pMap[f.partner].gross, amt);
-                            cash = Calc.add(cash, amt); totalPrinc = Calc.add(totalPrinc, amt);
-                            pMap[f.partner].flows.push({ d: f.date, v: -amt }); flowLog.push({ d: f.date, v: -amt });
-                        } else {
-                            pMap[f.partner].shares = Calc.sub(pMap[f.partner].shares, f.shares);
-                            pMap[f.partner].cost = Calc.sub(pMap[f.partner].cost, amt);
-                            cash = Calc.sub(cash, amt); totalPrinc = Calc.sub(totalPrinc, amt); totalRedeem = Calc.add(totalRedeem, amt);
-                            pMap[f.partner].flows.push({ d: f.date, v: amt }); flowLog.push({ d: f.date, v: amt });
-                        }
-                        totalShares = (f.type === 'DEPOSIT' ? Calc.add(totalShares, f.shares) : Calc.sub(totalShares, f.shares));
-                    });
-                    s.journals.forEach(j => { const amt = Calc.prec(j.amount); const sign = ['DIVIDEND', 'INTEREST', 'ADJUST_ADD'].includes(j.type) ? 1 : -1; cash = Calc.add(cash, sign * amt); });
-                    [...s.trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                        const k = `${t.market}:${t.code}`;
-                        if (!holdings[k]) holdings[k] = { qty: 0, cost: 0, name: t.name, mkt: t.market, code: t.code };
-                        const fx = t.fx || app.s.rates[MARKETS[t.market || 'US'].c] || 1;
-                        const amt = Calc.mul(Calc.mul(t.price, t.qty), fx);
-                        if (t.side === 'BUY') { holdings[k].qty = Calc.add(holdings[k].qty, t.qty); holdings[k].cost = Calc.add(holdings[k].cost, amt); cash = Calc.sub(cash, amt); }
-                        else {
-                            const avg = holdings[k].qty > 0 ? Calc.div(holdings[k].cost, holdings[k].qty) : 0;
-                            holdings[k].qty = Calc.sub(holdings[k].qty, t.qty); holdings[k].cost = Calc.sub(holdings[k].cost, Calc.mul(avg, t.qty)); cash = Calc.add(cash, amt);
-                            if (holdings[k].qty < 0.0001) { holdings[k].qty = 0; holdings[k].cost = 0; }
-                        }
-                    });
-                    app._cache.ledger = { cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog };
-                    // Dirty flag for ledger is kept true if daemon hasn't saved yet, but cache is updated.
-                } else {
-                    ({ cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog } = app._cache.ledger);
+                     app._cache.ledger = Kernel.calcLedger(s.trades, s.flows, s.journals, s.rates);
                 }
+                const { cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog } = app._cache.ledger;
     
-                // LAYER 2: Market (Frequent Update)
-                let stockVal = 0, dayPnl = 0; const assetList = [], industries = {};
-                Object.values(holdings).forEach(h => {
-                    if (h.qty < 0.001) return;
-                    const mktKey = h.mkt || 'US'; const mkt = MARKETS[mktKey] || MARKETS.US;
-                    const fx = app.s.rates[mkt.c] || 1;
-                    const mktData = app.s.mkt[`${h.mkt}:${h.code}`] || { cur: 0, pre: 0 };
-                    const price = mktData.cur > 0 ? mktData.cur : (h.cost / h.qty / fx);
-                    const prevClose = mktData.pre > 0 ? mktData.pre : price;
-                    const val = Calc.mul(Calc.mul(h.qty, price), fx);
-                    stockVal = Calc.add(stockVal, val); dayPnl += (price - prevClose) * h.qty * fx;
-                    const ind = app.s.stockMeta[h.code] || '未分类'; if (!industries[ind]) industries[ind] = 0; industries[ind] += val;
-                    assetList.push({ ...h, price, val, costAvg: Calc.div(h.cost, h.qty), pl: val - h.cost, plPct: h.cost > 0 ? (val - h.cost) / h.cost : 0, dayPct: prevClose > 0 ? (price - prevClose) / prevClose : 0, ind });
-                });
-                const aum = Calc.add(stockVal, cash); const nav = totalShares > 0.001 ? Calc.div(aum, totalShares) : 1.0;
+                // Phase 2: Assets (Market Value)
+                const { stockVal, dayPnl, assetList, industries } = Kernel.calcAssets(holdings, s.mkt, s.rates, s.stockMeta);
                 
-                // Aggregation & Stats
-                // XIRR is heavy, but depends on AUM which depends on Market. 
-                // However, historical flows don't change often. We optimize by only running XIRR here.
-                const xirr = app.logic.xirr([...flowLog, { d: TODAY(), v: aum }]);
-                let hist = app.s.navHist || []; if (hist.length === 0 && s.flows.length > 0) hist.push({ d: s.flows[0].date, n: 1, a: s.flows[0].amount, x: 0 });
-                const td = TODAY(); const hIdx = hist.findIndex(i => i.d === td);
-                const dp = { d: td, n: Calc.prec(nav), a: Calc.fmtMoney(aum), x: Calc.fmtMoney(xirr * 100), h: app.s.mkt['IDX:HSI']?.cur || 0, c: app.s.mkt['IDX:CSI']?.cur || 0 };
+                const aum = Calc.add(stockVal, cash);
+                const nav = totalShares > 0.001 ? Calc.div(aum, totalShares) : 1.0;
+    
+                // Phase 3: History & Stats
+                // Determine XIRR
+                // Optimized: Only calc XIRR on recalc, but using flowLog + current AUM
+                const xirr = Kernel.xirr([...flowLog, { d: TODAY(), v: aum }]);
+                
+                // History Management (Volatile part of state)
+                let hist = app.s.navHist || [];
+                const td = TODAY();
+                
+                // Enforce Silence Period (Logic)
+                const inceptionDate = s.flows.length > 0 ? new Date(s.flows[0].date) : new Date();
+                const daysSinceInception = (new Date(td) - inceptionDate) / (1000 * 60 * 60 * 24);
+                const safeXirr = daysSinceInception < 365 ? 0 : xirr * 100;
+                
+                // Data Point: PURE NUMBERS
+                const dp = { 
+                    d: td, 
+                    n: Calc.prec(nav), 
+                    a: Calc.prec(aum), // Stored as number now
+                    x: Calc.prec(safeXirr),
+                    h: s.mkt['IDX:HSI']?.cur || 0, 
+                    c: s.mkt['IDX:CSI']?.cur || 0 
+                };
+                
+                const hIdx = hist.findIndex(i => i.d === td);
                 if (hIdx >= 0) hist[hIdx] = dp; else hist.push(dp);
                 app.s.navHist = hist;
-                let partners = Object.keys(pMap).map(k => {
-                    const p = pMap[k]; const val = Calc.mul(p.shares, nav); const prof = val - p.cost;
+                
+                // Retro-clean history (in memory)
+                hist.forEach(h => {
+                     const days = (new Date(h.d) - inceptionDate) / (1000 * 60 * 60 * 24);
+                     if (days < 365) h.x = 0;
+                });
+    
+                // Phase 4: Partner Attribution
+                const partners = Object.keys(pMap).map(k => {
+                    const p = pMap[k];
+                    const val = Calc.mul(p.shares, nav);
+                    const prof = val - p.cost;
                     const pRedeem = p.flows.filter(x => x.v > 0).reduce((a, b) => a + b.v, 0);
                     const gross = p.gross > 0 ? p.gross : (p.cost > 0 ? p.cost : 0.01);
                     const roi = (val + pRedeem - p.gross) / gross;
-                    let days = 0; const depositFlows = p.flows.filter(f => f.v < 0);
-                    if (depositFlows.length > 0) { depositFlows.sort((a, b) => new Date(a.d) - new Date(b.d)); days = Math.floor((new Date(TODAY()) - new Date(depositFlows[0].d)) / (1000 * 60 * 60 * 24)); }
-                    return { name: k, shares: p.shares, cost: p.cost, val, profit: prof, roi: roi, xirr: app.logic.xirr([...p.flows, { d: td, v: val }]), redeem: pRedeem, days };
+                    
+                    let days = 0;
+                    const depositFlows = p.flows.filter(f => f.v < 0);
+                    if (depositFlows.length > 0) {
+                        depositFlows.sort((a, b) => new Date(a.d) - new Date(b.d));
+                        days = Math.floor((new Date(TODAY()) - new Date(depositFlows[0].d)) / (1000 * 60 * 60 * 24));
+                    }
+                    
+                    // Calc individual XIRR
+                    const pXirr = Kernel.xirr([...p.flows, { d: td, v: val }]);
+                    
+                    return { 
+                        name: k, shares: p.shares, cost: p.cost, 
+                        val, profit: prof, roi, xirr: pXirr, 
+                        redeem: pRedeem, days 
+                    };
                 }).sort((a, b) => b.val - a.val);
-                const mRet = []; if (hist.length > 1) { let lm = hist[0].d.substring(0, 7), ln = hist[0].n; hist.forEach(h => { const cm = h.d.substring(0, 7); if (cm !== lm) { mRet.push({ m: cm, v: ((h.n - ln) / ln) * 100 }); lm = cm; ln = h.n; } }); }
-                const stats = app.logic.calcStats(hist);
-                app.c = { nav, aum, cash, shares: totalShares, hist, partners, allPartners: Object.keys(pMap).map(k => ({ name: k, val: pMap[k].shares * nav })), assets: assetList, totalPrinc, totalProf: aum - totalPrinc, xirr, stockVal, monthlyReturns: mRet, totalRedeem, dayPnl, dayNavChg: (aum - dayPnl) > 0 ? dayPnl / (aum - dayPnl) : 0, industries, ...stats };
+    
+                // Phase 5: Stats
+                // Monthly Returns calculation
+                const mRet = [];
+                if (hist.length > 1) {
+                    let lm = hist[0].d.substring(0, 7), ln = hist[0].n;
+                    hist.forEach(h => {
+                        const cm = h.d.substring(0, 7);
+                        if (cm !== lm) {
+                            mRet.push({ m: cm, v: ((h.n - ln) / ln) * 100 });
+                            lm = cm; ln = h.n;
+                        }
+                    });
+                }
+                const stats = Kernel.analyzeStats(hist);
+    
+                // Commit to App State (The View Model)
+                app.c = {
+                    nav, aum, cash, shares: totalShares,
+                    hist, partners, 
+                    allPartners: Object.keys(pMap).map(k => ({ name: k, val: pMap[k].shares * nav })),
+                    assets: assetList,
+                    totalPrinc, totalProf: aum - totalPrinc,
+                    xirr, stockVal, monthlyReturns: mRet,
+                    totalRedeem, dayPnl, 
+                    dayNavChg: (aum - dayPnl) > 0 ? dayPnl / (aum - dayPnl) : 0,
+                    industries,
+                    ...stats
+                };
                 
-                // Do NOT set s._dirty.mkt = false here, wait for daemon
+                // Trigger UI update
                 if (app.ui && typeof app.ui.renderAll === 'function') { app.ui.renderAll(); }
             },
-            calcStats: (hist) => { if (!hist || hist.length < 10) return { maxDD: 0, ddPeriod: '--', alpha: '--', beta: '--', sharpe: '--' }; let maxNav = 0, maxDD = 0, peakDate = '', valleyDate = '', tempPeakDate = ''; hist.forEach(h => { if (h.n > maxNav) { maxNav = h.n; tempPeakDate = h.d; } const dd = (h.n - maxNav) / maxNav; if (dd < maxDD) { maxDD = dd; peakDate = tempPeakDate; valleyDate = h.d; } }); return { maxDD, ddPeriod: `${peakDate} ~ ${valleyDate}` }; },
-            xirr: (v, g = 0.1) => { 
-                if (v.length < 2) return 0; 
-                const d0 = new Date(v[0].d); let x = g; 
-                // [PATCH-Audit] Increase iterations for better convergence
-                for (let i = 0; i < 100; i++) { 
-                    let fx = 0, dfx = 0; 
-                    for (let o of v) { const dt = (new Date(o.d) - d0) / 86400000 / 365; const e = Math.pow(1 + x, dt); fx += o.v / e; dfx -= dt * o.v / (e * (1 + x)); } 
-                    if (Math.abs(dfx) < 1e-5) break; x -= fx / dfx; 
-                } 
-                return isFinite(x) ? x : 0; 
-            },
+    
             renamePartner: async () => { try { await app.acquireLock(); const oldN = document.getElementById('ipt-rename-old').value; const newN = app.sanitizeInput(document.getElementById('ipt-rename-new').value); if (!oldN || !newN) return alert("请输入新名字"); if (app.s.flows.some(f => f.partner === newN)) { return alert(`❌ 合伙人 "${newN}" 已存在！`); } app.s.flows.forEach(f => { if (f.partner === oldN) f.partner = newN; }); app.s._dirty.ledger = true; app.logic.recalc(); app.ui.renderPartnerMgmt(); app.ui.toast("更名成功"); } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
             deletePartner: async (name) => { if (!confirm(`⚠️ 确认要彻底删除合伙人 [${name}] 的所有记录吗？`)) return; app.s.flows = app.s.flows.filter(f => f.partner !== name); app.s._dirty.ledger = true; app.logic.recalc(); app.ui.renderPartnerMgmt(); app.ui.toast(`合伙人 [${name}] 已删除`); },
+            
+            // [PATCH-Hotfix] Restored missing logic functions
+            hidePartner: async (name) => { app.s.hiddenPartners = app.s.hiddenPartners || []; if(!app.s.hiddenPartners.includes(name)) app.s.hiddenPartners.push(name); app.s._dirty.ledger = true; app.logic.recalc(); app.ui.renderPartnerMgmt(); app.ui.toast('已隐藏'); },
+            unhidePartner: async (name) => { app.s.hiddenPartners = (app.s.hiddenPartners || []).filter(n => n !== name); app.s._dirty.ledger = true; app.logic.recalc(); app.ui.renderPartnerMgmt(); app.ui.toast('已取消隐藏'); },
+    
             editTrade: async (id) => { const trade = app.s.trades.find(t => t.id === id); if (!trade) return; const modalEl = document.getElementById('tradeModal'); modalEl.dataset.editId = id; document.getElementById('tradeModal-title').innerText = '编辑交易'; document.getElementById('ipt-code').value = trade.code; document.getElementById('ipt-name').innerText = trade.name; document.getElementById('ipt-side').value = trade.side; document.getElementById('ipt-date').value = trade.date; document.getElementById('ipt-price').value = trade.price; document.getElementById('ipt-qty').value = trade.qty; document.getElementById('ipt-fx').value = trade.fx; document.getElementById('btn-delete-trade').classList.remove('d-none'); new bootstrap.Modal(modalEl).show(); },
             saveTrade: async () => { 
                 try { 
@@ -785,7 +1002,7 @@
                     if (!code || !price || !qty) return alert('请填写完整信息'); 
                     if (!fx) { const m = app.api.detect(code); fx = app.s.rates[MARKETS[m].c] || 1; } 
                     sessionStorage.setItem('FM_PREF_LAST_FX', fx); 
-
+    
                     // [PATCH-Audit] Risk Control: Naked Short Check
                     const asset = app.c.assets.find(a => a.code === code);
                     let maxSell = asset ? asset.qty : 0;
@@ -799,7 +1016,7 @@
                     if (side === 'SELL' && qty > maxSell) {
                         return alert(`❌ 持仓不足！当前可用: ${Math.max(0, maxSell).toFixed(0)}股，试图卖出: ${qty}股`);
                     }
-
+    
                     if (isEdit) { const idx = app.s.trades.findIndex(t => t.id === editId); if (idx === -1) return alert('交易记录未找到'); app.s.trades[idx] = { ...app.s.trades[idx], date, code, name: document.getElementById('ipt-name').innerText, market: app.api.detect(code), side, price, qty, fx }; app.ui.toast('✅ 交易已更新'); } 
                     else { 
                         const t = { id: Utils.uuid(), date, code, name: document.getElementById('ipt-name').innerText, market: app.api.detect(code), side, price, qty, fx }; 
@@ -823,7 +1040,7 @@
                     const nav = manualNav || app.c.nav; 
                     const partner = app.sanitizeInput(document.getElementById('ipt-partner').value); 
                     const type = document.getElementById('ipt-flow-type').value;
-
+    
                     // [PATCH-Audit] Risk Control: Overdraft Check
                     if (type === 'WITHDRAW') {
                         const pData = app.c.partners.find(p => p.name === partner);
@@ -832,7 +1049,7 @@
                             return alert(`❌ 余额不足！该合伙人最大可提现: ¥${maxDraw.toFixed(2)}`);
                         }
                     }
-
+    
                     const f = { id: Utils.uuid(), date: date, partner: partner, type: type, amount: amt, shares: Calc.div(amt, nav) }; 
                     app.s.flows.push(f); app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('flowModal')).hide(); 
                 } catch (e) { alert(e.message); } finally { app.releaseLock(); } 
@@ -843,31 +1060,95 @@
     
         ui: {
             // [PATCH-001] Graphics Memory Leak Fix
-            safeChart: (id, type, data, options) => {
+            safeChart: (id, type, data, options, plugins = []) => {
                 if (app.charts[id]) { 
                     app.charts[id].destroy(); 
                     app.charts[id] = null; // Explicitly nullify
                 }
                 const ctx = document.getElementById(id).getContext('2d');
-                app.charts[id] = new Chart(ctx, { type, data, options });
+                app.charts[id] = new Chart(ctx, { type, data, options, plugins });
                 return app.charts[id];
             },
     
             renderAll: (filterMkt = null) => {
                 const c = app.c; const set = (i, v) => { const e = document.getElementById(i); if (e) e.innerText = v; }; const setC = (i, v) => { const e = document.getElementById(i); if (e) e.className = v; };
-                set('metric-aum', FMT.money(c.aum)); set('val-position', c.aum > 0 ? FMT.pct((c.aum - c.cash) / c.aum) : '0.00%'); set('val-cash-small', FMT.money(c.cash)); set('val-day-pnl', (c.dayPnl > 0 ? '+' : '') + FMT.money(c.dayPnl)); setC('val-day-pnl', 'font-num ' + (c.dayPnl >= 0 ? 'text-up' : 'text-down'));
-                set('metric-profit', (c.totalProf > 0 ? '+' : '') + FMT.money(c.totalProf)); setC('metric-profit', 'metric-value ' + (c.totalProf >= 0 ? 'text-up' : 'text-down'));
-                set('metric-nav', FMT.nav(c.nav)); const nc = (c.nav - 1); set('metric-nav-change', (c.nav > 1 ? '+' : '') + FMT.pct(nc)); setC('metric-nav-change', 'fw-bold ' + (nc >= 0 ? 'text-up' : 'text-down'));
-                set('val-shares', FMT.val(c.shares)); set('val-nav-day-chg', (c.dayNavChg > 0 ? '+' : '') + FMT.pct(c.dayNavChg)); setC('val-nav-day-chg', 'font-num ' + (c.dayNavChg >= 0 ? 'text-up' : 'text-down'));
-                set('metric-xirr', FMT.pct(c.xirr)); setC('metric-xirr', 'metric-value ' + (c.xirr >= 0 ? 'text-up' : 'text-down')); set('val-redeem', FMT.money(c.totalRedeem)); set('val-drawdown', '最大回撤: ' + FMT.pct(c.maxDD)); document.getElementById('val-drawdown').title = `区间: ${c.ddPeriod}`;
-                const stkCost = c.assets.reduce((a, b) => a + b.cost, 0); const stkVal = c.aum - c.cash; const stkPl = stkVal - stkCost; set('stk-total-cost', FMT.money(stkCost)); set('stk-total-val', FMT.money(stkVal)); set('stk-total-pl', (stkPl > 0 ? '+' : '') + FMT.money(stkPl)); set('stk-total-roi', stkCost > 0 ? FMT.pct(stkPl / stkCost) : '0.00%'); set('val-cash', FMT.money(c.cash));
-                const totalGross = c.partners.reduce((s, p) => s + (p.gross || p.cost || 0), 0); const totalRoi = totalGross > 0 ? (c.aum + c.totalRedeem - totalGross) / totalGross : 0; set('val-roi-total', (totalRoi > 0 ? '+' : '') + FMT.pct(totalRoi)); setC('val-roi-total', 'fw-bold ' + (totalRoi >= 0 ? 'text-up' : 'text-down'));
+                
+                // Pure Data -> formatted UI
+                set('metric-aum', FMT.money(c.aum)); 
+                set('val-position', c.aum > 0 ? FMT.pct((c.aum - c.cash) / c.aum) : '0.00%'); 
+                set('val-cash-small', FMT.money(c.cash)); 
+                set('val-day-pnl', (c.dayPnl > 0 ? '+' : '') + FMT.money(c.dayPnl)); 
+                setC('val-day-pnl', 'font-num ' + (c.dayPnl >= 0 ? 'text-up' : 'text-down'));
+                
+                set('metric-profit', (c.totalProf > 0 ? '+' : '') + FMT.money(c.totalProf)); 
+                setC('metric-profit', 'metric-value ' + (c.totalProf >= 0 ? 'text-up' : 'text-down'));
+                
+                set('metric-nav', FMT.nav(c.nav)); 
+                const nc = (c.nav - 1); 
+                set('metric-nav-change', (c.nav > 1 ? '+' : '') + FMT.pct(nc)); 
+                setC('metric-nav-change', 'fw-bold ' + (nc >= 0 ? 'text-up' : 'text-down'));
+                
+                set('val-shares', FMT.val(c.shares)); 
+                set('val-nav-day-chg', (c.dayNavChg > 0 ? '+' : '') + FMT.pct(c.dayNavChg)); 
+                setC('val-nav-day-chg', 'font-num ' + (c.dayNavChg >= 0 ? 'text-up' : 'text-down'));
+                
+                set('metric-xirr', FMT.pct(c.xirr)); 
+                setC('metric-xirr', 'metric-value ' + (c.xirr >= 0 ? 'text-up' : 'text-down')); 
+                set('val-redeem', FMT.money(c.totalRedeem)); 
+                set('val-drawdown', '最大回撤: ' + FMT.pct(c.maxDD)); 
+                document.getElementById('val-drawdown').title = `区间: ${c.ddPeriod}`;
+                
+                const stkCost = c.assets.reduce((a, b) => a + b.cost, 0); 
+                const stkVal = c.aum - c.cash; 
+                const stkPl = stkVal - stkCost; 
+                set('stk-total-cost', FMT.money(stkCost)); 
+                set('stk-total-val', FMT.money(stkVal)); 
+                set('stk-total-pl', (stkPl > 0 ? '+' : '') + FMT.money(stkPl)); 
+                set('stk-total-roi', stkCost > 0 ? FMT.pct(stkPl / stkCost) : '0.00%'); 
+                set('val-cash', FMT.money(c.cash));
+                
+                const totalGross = c.partners.reduce((s, p) => s + (p.gross || p.cost || 0), 0); 
+                const totalRoi = totalGross > 0 ? (c.aum + c.totalRedeem - totalGross) / totalGross : 0; 
+                set('val-roi-total', (totalRoi > 0 ? '+' : '') + FMT.pct(totalRoi)); 
+                setC('val-roi-total', 'fw-bold ' + (totalRoi >= 0 ? 'text-up' : 'text-down'));
+                
                 app.ui.drawNavChart(); app.ui.drawPerfChart(); app.ui.drawAssetCharts(); app.ui.switchContribTab('val'); app.ui.switchStockTab('val'); app.ui.switchAnalyTab('industry');
                 app.ui.renderHoldings(filterMkt); app.ui.renderPartnerTable(); app.ui.filterLedger('all'); app.ui.updateEngineStatus();
-                const dl = document.getElementById('dl-partners'); dl.innerHTML = ''; const allPartnersUnique = [...new Set(app.s.flows.map(f => f.partner))]; allPartnersUnique.forEach(p => { const o = document.createElement('option'); o.value = Utils.escape(p); dl.appendChild(o) }); app.ui.renderPartnerMgmt(allPartnersUnique);
+                
+                const dl = document.getElementById('dl-partners'); dl.innerHTML = ''; 
+                const allPartnersUnique = [...new Set(app.s.flows.map(f => f.partner))]; 
+                allPartnersUnique.forEach(p => { const o = document.createElement('option'); o.value = Utils.escape(p); dl.appendChild(o) }); 
+                
+                // [PATCH-Hotfix] Restored renderPartnerMgmt call
+                app.ui.renderPartnerMgmt(allPartnersUnique);
                 document.getElementById('search-holdings').value = ''; document.getElementById('search-partners').value = '';
             },
-            renderPartnerMgmt: (allPartners) => { const ul = document.getElementById('mgmt-partner-list'); ul.innerHTML = ''; const hidden = app.s.hiddenPartners || []; allPartners.forEach(p => { const pData = app.c.allPartners ? app.c.allPartners.find(ap => ap.name === p) : null; const isHidden = hidden.includes(p); let actionBtn = '', statusBadge = ''; if (isHidden) { statusBadge = '<span class="badge bg-secondary">已隐藏</span>'; actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="app.logic.unhidePartner('${Utils.escape(p)}')" title="取消隐藏"><i class="fas fa-eye"></i></button>`; } else if (pData && pData.val > 1) { statusBadge = '<span class="badge bg-success">在投</span>'; actionBtn = `<button class="btn btn-sm btn-outline-secondary" disabled title="有在投资产"><i class="fas fa-ban"></i></button>`; } else { statusBadge = '<span class="badge bg-danger">无资产</span>'; actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="app.logic.deletePartner('${Utils.escape(p)}')" title="物理删除"><i class="fas fa-trash-alt"></i></button> <button class="btn btn-sm btn-outline-dark" onclick="app.logic.hidePartner('${Utils.escape(p)}')" title="隐藏"><i class="fas fa-eye-slash"></i></button>`; } ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${Utils.escape(p)} ${statusBadge}</span><div><button class="btn btn-sm btn-outline-primary me-1" onclick="document.getElementById('ipt-rename-old').value='${Utils.escape(p)}'"><i class="fas fa-edit"></i></button>${actionBtn}</div></li>`; }); },
+            
+            // [PATCH-Hotfix] Restored missing renderPartnerMgmt function
+            renderPartnerMgmt: (allPartners) => { 
+                if (!allPartners) allPartners = [...new Set(app.s.flows.map(f => f.partner))];
+                const ul = document.getElementById('mgmt-partner-list'); 
+                if (!ul) return;
+                ul.innerHTML = ''; 
+                const hidden = app.s.hiddenPartners || []; 
+                allPartners.forEach(p => { 
+                    const pData = app.c.allPartners ? app.c.allPartners.find(ap => ap.name === p) : null; 
+                    const isHidden = hidden.includes(p); 
+                    let actionBtn = '', statusBadge = ''; 
+                    if (isHidden) { 
+                        statusBadge = '<span class="badge bg-secondary">已隐藏</span>'; 
+                        actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="app.logic.unhidePartner('${Utils.escape(p)}')" title="取消隐藏"><i class="fas fa-eye"></i></button>`; 
+                    } else if (pData && pData.val > 1) { 
+                        statusBadge = '<span class="badge bg-success">在投</span>'; 
+                        actionBtn = `<button class="btn btn-sm btn-outline-secondary" disabled title="有在投资产"><i class="fas fa-ban"></i></button>`; 
+                    } else { 
+                        statusBadge = '<span class="badge bg-danger">无资产</span>'; 
+                        actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="app.logic.deletePartner('${Utils.escape(p)}')" title="物理删除"><i class="fas fa-trash-alt"></i></button> <button class="btn btn-sm btn-outline-dark" onclick="app.logic.hidePartner('${Utils.escape(p)}')" title="隐藏"><i class="fas fa-eye-slash"></i></button>`; 
+                    } 
+                    ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${Utils.escape(p)} ${statusBadge}</span><div><button class="btn btn-sm btn-outline-primary me-1" onclick="document.getElementById('ipt-rename-old').value='${Utils.escape(p)}'"><i class="fas fa-edit"></i></button>${actionBtn}</div></li>`; 
+                }); 
+            },
+    
             sort: (table, key) => { if (app.uiSort.k === key) app.uiSort.d = -app.uiSort.d; else { app.uiSort.k = key; app.uiSort.d = 1; } if (table === 'holdings') app.ui.renderHoldings(); if (table === 'partners') app.ui.renderPartnerTable(); },
             filterHoldingsByMarket: (mkt) => { const btn = document.getElementById('btn-reset-filter'); if (mkt) { btn.classList.remove('d-none'); app.ui.toast(`筛选: ${mkt}`); } else { btn.classList.add('d-none'); } app.ui.renderHoldings(mkt); },
             updateEngineStatus: () => { const el = document.getElementById('status-capsule'); const txt = el.querySelector('.status-text'); const isFxOk = app.status.fx.ok; const isStkOk = app.status.stk.ok; if (isFxOk && isStkOk) { el.className = 'status-capsule status-ok'; txt.innerText = '系统正常'; } else { el.className = 'status-capsule status-warn'; txt.innerText = (!isFxOk && !isStkOk) ? '服务断开' : (!isFxOk ? '汇率异常' : '行情异常'); } },
@@ -876,16 +1157,48 @@
                 if (!mBody) { console.error("Critical UI Error: #status-modal-body not found."); return; }
                 let lsUsage = 0; for (let x in localStorage) { if (localStorage.hasOwnProperty(x)) lsUsage += ((localStorage[x].length + x.length) * 2); } const lsUsageStr = (lsUsage / 1024).toFixed(2) + ' KB';
                 const fxSrc = app.status.fx.src || '--'; const stkSrc = app.status.stk.src || '--'; const fxRates = `${app.s.rates.USD.toFixed(3)}/${app.s.rates.HKD.toFixed(3)}`;
-                mBody.innerHTML = `<div class="mb-3"><h6 class="text-muted small fw-bold mb-2"><i class="fas fa-exchange-alt me-1"></i>实时汇率检测链路</h6><div class="d-flex align-items-center gap-1"><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Tencent' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-satellite-dish ${fxSrc === 'Tencent' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Tencent</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Sina' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-globe-americas ${fxSrc === 'Sina' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Sina</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Frankfurter' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-cloud ${fxSrc === 'Frankfurter' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Frank</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'YunAPI' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-database ${fxSrc === 'YunAPI' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">YunAPI</div></div></div></div><div class="mt-2 bg-light rounded p-2" style="font-size:0.65rem;"><span class="text-muted">状态:</span> <span class="${app.status.fx.ok ? 'text-success' : 'text-danger'} fw-bold">${app.status.fx.ok ? '在线' : '离线'}</span> <span class="text-muted ms-2">来源:</span> <span class="font-monospace">${fxSrc}</span><span class="text-muted ms-2">汇率:</span> <span class="font-monospace">${fxRates}</span></div></div><div class="mb-3"><h6 class="text-muted small fw-bold mb-2"><i class="fas fa-chart-line me-1"></i>实时股票检测链路</h6><div class="d-flex align-items-center gap-1"><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${stkSrc === 'Tencent' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-satellite-dish ${stkSrc === 'Tencent' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Tencent</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${stkSrc === 'Sina' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-globe-americas ${stkSrc === 'Sina' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Sina</div></div></div></div><div class="mt-2 bg-light rounded p-2" style="font-size:0.65rem;"><span class="text-muted">状态:</span> <span class="${app.status.stk.ok ? 'text-success' : 'text-danger'} fw-bold">${app.status.stk.ok ? '在线' : '离线'}</span> <span class="text-muted ms-2">来源:</span> <span class="font-monospace">${stkSrc}</span></div></div><div class="text-center mt-3 pt-2 border-top"><button class="btn btn-sm btn-outline-primary w-50" onclick="app.api.refresh(true); bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();"><i class="fas fa-sync-alt me-1"></i> 立即检测 & 刷新</button></div>`;
+                mBody.innerHTML = `<div class="mb-3"><h6 class="text-muted small fw-bold mb-2"><i class="fas fa-exchange-alt me-1"></i>实时汇率检测链路</h6><div class="d-flex align-items-center gap-1"><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Tencent' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-satellite-dish ${fxSrc === 'Tencent' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Tencent</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Sina' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-globe-americas ${fxSrc === 'Sina' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.6rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Sina</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'Frankfurter' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-cloud ${fxSrc === 'Frankfurter' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.6rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Frank</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${fxSrc === 'YunAPI' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-database ${fxSrc === 'YunAPI' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.6rem;"></i><div style="font-size:0.6rem;" class="fw-bold">YunAPI</div></div></div></div><div class="mb-3"><h6 class="text-muted small fw-bold mb-2"><i class="fas fa-chart-line me-1"></i>实时股票检测链路</h6><div class="d-flex align-items-center gap-1"><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${stkSrc === 'Tencent' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-satellite-dish ${stkSrc === 'Tencent' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Tencent</div></div></div><i class="fas fa-arrow-right text-muted" style="font-size:0.7rem;"></i><div class="flex-shrink-0 text-center" style="width:60px;"><div class="p-1 ${stkSrc === 'Sina' ? 'bg-success text-white' : 'bg-white'} border rounded"><i class="fas fa-globe-americas ${stkSrc === 'Sina' ? 'text-white' : 'text-muted'} mb-1" style="font-size:0.8rem;"></i><div style="font-size:0.6rem;" class="fw-bold">Sina</div></div></div></div><div class="mt-2 bg-light rounded p-2" style="font-size:0.65rem;"><span class="text-muted">状态:</span> <span class="${app.status.stk.ok ? 'text-success' : 'text-danger'} fw-bold">${app.status.stk.ok ? '在线' : '离线'}</span> <span class="text-muted ms-2">来源:</span> <span class="font-monospace">${stkSrc}</span></div></div><div class="text-center mt-3 pt-2 border-top"><button class="btn btn-sm btn-outline-primary w-50" onclick="app.api.refresh(true); bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();"><i class="fas fa-sync-alt me-1"></i> 立即检测 & 刷新</button></div>`;
                 new bootstrap.Modal(document.getElementById('statusModal')).show();
             },
             
             // [PATCH-001] Updated to use safeChart
             drawNavChart: () => { 
-                let baseHsi = app.s.bench?.hsi || 0; let baseCsi = app.s.bench?.csi || 0; 
-                if (baseHsi === 0 || baseCsi === 0) { const firstValid = app.c.hist.find(h => h.h > 0 && h.c > 0); if (firstValid) { baseHsi = firstValid.h; baseCsi = firstValid.c; } } 
-                const benchData = app.c.hist.map(h => { if (baseHsi > 0 && baseCsi > 0 && h.h > 0 && h.c > 0) { return 0.6 * (h.h / baseHsi) + 0.4 * (h.c / baseCsi); } return null; }); 
-                app.ui.safeChart('navChart', 'line', { labels: app.c.hist.map(d => d.d.substring(5)), datasets: [{ label: 'NAV', data: app.c.hist.map(d => d.n), borderColor: CS.primary, backgroundColor: 'transparent', fill: false, pointRadius: 0, borderWidth: 2, yAxisID: 'y', datalabels: { display: false } }, { label: '60/40基准', data: benchData, borderColor: '#94a3b8', borderDash: [4, 4], pointRadius: 0, borderWidth: 1.5, yAxisID: 'y', datalabels: { display: false } }, { label: 'XIRR%', data: app.c.hist.map(d => d.x), borderColor: CS.warning, borderDash: [2, 2], pointRadius: 0, borderWidth: 1, yAxisID: 'y1', datalabels: { display: false } }] }, { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, position: 'left' }, y1: { position: 'right', grid: { display: false }, ticks: { callback: v => v + '%' } } } }); 
+                // [PATCH-User] Removed Benchmark Logic
+                // [PATCH-User] XIRR Silence Annotation
+                const silencePlugin = {
+                    id: 'silenceLabel',
+                    afterDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        const inceptionDate = app.s.flows.length > 0 ? new Date(app.s.flows[0].date) : new Date();
+                        const days = (new Date() - inceptionDate) / (1000 * 60 * 60 * 24);
+                        if (days < 365) {
+                            ctx.save();
+                            ctx.font = 'bold 12px "Segoe UI", sans-serif';
+                            ctx.fillStyle = '#94a3b8';
+                            ctx.textAlign = 'center';
+                            const cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+                            const cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                            ctx.fillText("📊 数据积累期 (<1年) 暂不计算年化", cx, cy - 20);
+                            ctx.restore();
+                        }
+                    }
+                };
+    
+                app.ui.safeChart('navChart', 'line', { 
+                    labels: app.c.hist.map(d => d.d.substring(5)), 
+                    datasets: [
+                        { label: 'NAV', data: app.c.hist.map(d => d.n), borderColor: CS.primary, backgroundColor: 'transparent', fill: false, pointRadius: 0, borderWidth: 2, yAxisID: 'y', datalabels: { display: false } }, 
+                        { label: 'XIRR%', data: app.c.hist.map(d => d.x), borderColor: CS.warning, borderDash: [2, 2], pointRadius: 0, borderWidth: 1, yAxisID: 'y1', datalabels: { display: false } }
+                    ] 
+                }, { 
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, 
+                    scales: { 
+                        x: { grid: { display: false } }, 
+                        y: { grid: { color: '#f1f5f9' }, position: 'left' }, 
+                        y1: { position: 'right', grid: { display: false }, ticks: { callback: v => v + '%' } } 
+                    } 
+                }, [silencePlugin]); 
             },
             drawPerfChart: () => { 
                 app.ui.safeChart('perfChart', 'bar', { labels: app.c.monthlyReturns.map(d => d.m), datasets: [{ label: '月度收益%', data: app.c.monthlyReturns.map(d => d.v), backgroundColor: app.c.monthlyReturns.map(d => d.v >= 0 ? CS.danger : CS.success), borderRadius: 4, maxBarThickness: 50 }] }, { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { formatter: v => FMT.pct(v), display: 'auto', anchor: 'end', align: 'end' }, tooltip: { callbacks: { label: c => FMT.pct(c.raw) } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.05)' }, grace: '10%' } } }); 
@@ -893,37 +1206,171 @@
             switchContribTab: (m, btn) => { 
                 if (btn) { btn.parentNode.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } 
                 const ps = app.c.partners; const labels = ps.map(p => p.name); let datasets = []; 
-                if (m === 'val') { datasets = [{ label: '盈亏贡献', data: ps.map(p => p.profit), backgroundColor: ps.map(p => p.profit >= 0 ? CS.danger : CS.success) }]; } 
-                else { const avgRoi = ps.reduce((a, b) => a + b.profit, 0) / ps.reduce((a, b) => a + b.cost, 0); datasets = [{ type: 'line', label: '平均ROI', data: Array(ps.length).fill(avgRoi * 100), borderColor: CS.neutral, borderDash: [4, 4], pointRadius: 0, datalabels: { display: false } }, { label: 'ROI%', data: ps.map(p => p.roi * 100), backgroundColor: ps.map(p => p.roi >= 0 ? CS.danger : CS.success) }]; } 
+                if (m === 'val') { datasets = [{ label: '盈亏贡献', data: ps.map(p => p.profit), backgroundColor: ps.map(p => p.profit >= 0 ? CS.danger : CS.success), maxBarThickness: 50 }]; } 
+                else { const avgRoi = ps.reduce((a, b) => a + b.profit, 0) / ps.reduce((a, b) => a + b.cost, 0); datasets = [{ type: 'line', label: '平均ROI', data: Array(ps.length).fill(avgRoi * 100), borderColor: CS.neutral, borderDash: [4, 4], pointRadius: 0, datalabels: { display: false } }, { label: 'ROI%', data: ps.map(p => p.roi * 100), backgroundColor: ps.map(p => p.roi >= 0 ? CS.danger : CS.success), maxBarThickness: 50 }]; } 
                 app.ui.safeChart('chartContrib', 'bar', { labels: labels, datasets: datasets }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { formatter: v => m === 'val' ? '￥' + Math.round(v).toLocaleString() : v.toFixed(2) + '%', display: 'auto', anchor: m === 'val' ? (c => c.dataset.data[c.dataIndex] >= 0 ? 'end' : 'start') : 'end', align: m === 'val' ? (c => c.dataset.data[c.dataIndex] >= 0 ? 'end' : 'start') : 'end' } }, scales: { y: { grace: '10%' }, x: { grid: { display: false } } } }); 
             },
             switchStockTab: (m, btn) => { 
                 if (btn) { btn.parentNode.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } 
                 const top10 = [...app.c.assets].sort((a, b) => b.val - a.val).slice(0, 10); 
                 let bgColors = m === 'val' ? PALETTE : top10.map(a => a.pl >= 0 ? CS.danger : CS.success); 
-                app.ui.safeChart('chartStockDetail', 'bar', { labels: top10.map(a => a.name), datasets: [{ data: top10.map(a => m === 'val' ? a.val : a.pl), backgroundColor: bgColors, maxBarThickness: 40 }] }, { maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, datalabels: { display: 'auto', anchor: 'end', align: 'end', offset: 4, formatter: v => '￥' + (v / 10000).toFixed(1) + '万', font: { size: 11, weight: 'bold' }, color: '#334155', textStrokeWidth: 0 } }, scales: { x: { grid: { display: false } }, y: { display: false, grace: '10%' } } }); 
+                app.ui.safeChart('chartStockDetail', 'bar', { labels: top10.map(a => a.name), datasets: [{ data: top10.map(a => m === 'val' ? a.val : a.pl), backgroundColor: bgColors, maxBarThickness: 50 }] }, { maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, datalabels: { display: 'auto', anchor: 'end', align: 'end', offset: 4, formatter: v => '￥' + (v / 10000).toFixed(2) + '万', font: { size: 11, weight: 'bold' }, color: '#334155', textStrokeWidth: 0 } }, scales: { x: { grid: { display: false } }, y: { display: false, grace: '10%' } } }); 
             },
             switchAnalyTab: (t, btn) => { if (btn) { btn.parentNode.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } const ind = document.getElementById('ct-industry'), cost = document.getElementById('ct-cost'), conc = document.getElementById('ct-conc'); ind.classList.add('chart-content-hidden'); cost.classList.add('chart-content-hidden'); conc.classList.add('chart-content-hidden'); if (t === 'industry') ind.classList.remove('chart-content-hidden'); else if (t === 'cost') cost.classList.remove('chart-content-hidden'); else if (t === 'conc') conc.classList.remove('chart-content-hidden'); },
-            drawAssetCharts: () => { const donutLabels = { color: '#334155', font: { weight: 'bold', size: 11 }, anchor: 'end', align: 'end', offset: 2, textAlign: 'center', display: (ctx) => { let sum = 0; ctx.chart.data.datasets[0].data.map(d => sum += d); const val = ctx.dataset.data[ctx.dataIndex]; return (val / sum) > 0.05; }, formatter: (v, ctx) => { let sum = 0; ctx.chart.data.datasets[0].data.map(d => sum += d); const pct = (v * 100 / sum).toFixed(1) + '%'; const amt = '¥' + Math.round(v / 10000) + '万'; const label = ctx.chart.data.labels[ctx.dataIndex] || ''; return [label, amt + ' ' + pct]; } }; 
-                const mk = (id, type, data, onClickHandler) => { 
-                    const el = document.getElementById(id); 
-                    if (el) { 
-                        app.ui.safeChart(id, type, data, { maintainAspectRatio: false, layout: { padding: { top: 40, bottom: 20, left: 20, right: 20 } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }, datalabels: donutLabels }, onClick: onClickHandler }); 
-                    } 
+            
+            // [PATCH-Spider Labels] New implementation for doughnut charts
+            drawAssetCharts: () => { 
+                const spiderLabels = {
+                    id: 'spiderLabels',
+                    afterDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        ctx.save();
+                        ctx.font = 'bold 10px "Segoe UI", sans-serif';
+                        ctx.textBaseline = 'middle';
+                        
+                        const meta = chart.getDatasetMeta(0);
+                        const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        const cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+                        const cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+    
+                        meta.data.forEach((element, index) => {
+                            // [PATCH-User] Only draw if visible (value > 0 is handled by data prep, but double check)
+                            if (element.hidden) return;
+    
+                            const val = chart.data.datasets[0].data[index];
+                            const pct = val / total;
+    
+                            const startAngle = element.startAngle;
+                            const endAngle = element.endAngle;
+                            const middleAngle = startAngle + (endAngle - startAngle) / 2;
+                            
+                            const outerRadius = element.outerRadius;
+                            const lineLen = 12;
+                            const x2 = cx + Math.cos(middleAngle) * (outerRadius + lineLen);
+                            const y2 = cy + Math.sin(middleAngle) * (outerRadius + lineLen);
+                            
+                            const isLeft = x2 < cx;
+                            const x3 = isLeft ? x2 - 15 : x2 + 15;
+                            const y3 = y2;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(cx + Math.cos(middleAngle) * outerRadius, cy + Math.sin(middleAngle) * outerRadius);
+                            ctx.lineTo(x2, y2);
+                            ctx.lineTo(x3, y3);
+                            ctx.strokeStyle = element.options.backgroundColor;
+                            ctx.lineWidth = 1.5;
+                            ctx.stroke();
+                            
+                            const label = chart.data.labels[index];
+                            const amtStr = '¥' + Math.round(val/10000) + '万';
+                            const pctStr = (pct * 100).toFixed(1) + '%';
+    
+                            ctx.textAlign = isLeft ? 'right' : 'left';
+                            ctx.fillStyle = '#475569';
+    
+                            // 第一行: label
+                            ctx.fillText(`${label}`, isLeft ? x3 - 5 : x3 + 5, y3 - 9);
+                            // 第二行: 金额
+                            ctx.font = '10px "Segoe UI"';
+                            ctx.fillStyle = '#64748b';
+                            ctx.fillText(`${amtStr}`, isLeft ? x3 - 5 : x3 + 5, y3 + 1);
+                            // 第三行: 百分比
+                            ctx.fillText(`${pctStr}`, isLeft ? x3 - 5 : x3 + 5, y3 + 11);
+                            ctx.font = 'bold 10px "Segoe UI"';
+                        });
+                        ctx.restore();
+                    }
+                };
+    
+                // [PATCH-User] Helper to filter 0s and Interleave Sort (Big, Small, Big, Small)
+                const optimizeOrder = (labels, data, colors) => {
+                    // 1. Zip
+                    let items = labels.map((l, i) => ({ l, d: data[i], c: colors[i] }));
+                    // 2. Filter extremely small values (essentially 0) to hide empty labels
+                    items = items.filter(i => i.d > 0.01);
+                    // 3. Sort Descending
+                    items.sort((a, b) => b.d - a.d);
+                    // 4. Interleave (Big, Small, Big, Small) to prevent crowding
+                    const result = [];
+                    let left = 0, right = items.length - 1;
+                    while (left <= right) {
+                        if (left === right) { result.push(items[left]); break; }
+                        result.push(items[left++]);
+                        result.push(items[right--]);
+                    }
+                    return {
+                        labels: result.map(i => i.l),
+                        data: result.map(i => i.d),
+                        colors: result.map(i => i.c)
+                    };
+                };
+    
+                const mk = (id, type, dataRaw, onClickHandler) => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        // Apply optimization if it's a doughnut (dataRaw has datasets[0].data)
+                        let finalData = dataRaw;
+                        if (type === 'doughnut') {
+                            const optimized = optimizeOrder(
+                                dataRaw.labels,
+                                dataRaw.datasets[0].data,
+                                dataRaw.datasets[0].backgroundColor
+                            );
+                            finalData = {
+                                labels: optimized.labels,
+                                datasets: [{
+                                    data: optimized.data,
+                                    backgroundColor: optimized.colors,
+                                    borderWidth: 1,
+                                    borderColor: '#fff'
+                                }]
+                            };
+                        }
+    
+                        // Special layout for market chart (more padding and larger cutout)
+                        const isMarketChart = id === 'chartMarket';
+                        const layout = {
+                            padding: {
+                                top: 20,
+                                bottom: 20,
+                                left: isMarketChart ? 70 : 60,
+                                right: isMarketChart ? 70 : 60
+                            }
+                        };
+                        const options = {
+                            maintainAspectRatio: false,
+                            layout: layout,
+                            cutout: isMarketChart ? '67%' : '65%',
+                            plugins: {
+                                legend: { display: false },
+                                datalabels: { display: false }
+                            },
+                            onClick: onClickHandler
+                        };
+                        app.ui.safeChart(id, type, finalData, options, [spiderLabels]);
+                    }
                 }; 
-                mk('chartAlloc', 'doughnut', { labels: ['股票', '现金'], datasets: [{ data: [app.c.aum - app.c.cash, app.c.cash], backgroundColor: [CS.primary, CS.warning], borderWidth: 1, borderColor: '#fff' }] }, null); 
-                const mktDist = { CN: 0, HK: 0, US: 0, SZB: 0, SHB: 0 }; app.c.assets.forEach(a => { mktDist[a.mkt || 'US'] += a.val; }); 
-                mk('chartMarket', 'doughnut', { labels: ['A股', '港股', '美股', '深B', '沪B'], datasets: [{ data: [mktDist.CN, mktDist.HK, mktDist.US, mktDist.SZB, mktDist.SHB], backgroundColor: [CS.cyan, CS.warning, CS.primary, '#8b5cf6', '#ec4899'], borderWidth: 1, borderColor: '#fff' }] }, null); 
-                app.ui.safeChart('structChart', 'bar', { labels: app.c.partners.map(p => p.name), datasets: [{ label: '本金', data: app.c.partners.map(p => p.cost), backgroundColor: CS.cyan, stack: '0' }, { label: '增值', data: app.c.partners.map(p => p.profit), backgroundColor: CS.warning, stack: '0' }] }, { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false } } }, plugins: { datalabels: { formatter: v => '￥' + Math.round(v).toLocaleString(), display: 'auto', color: '#333' } } }); 
+                
+                mk('chartAlloc', 'doughnut', { labels: ['股票', '现金'], datasets: [{ data: [app.c.aum - app.c.cash, app.c.cash], backgroundColor: [CS.primary, CS.warning] }] }, null); 
+                
+                const mktDist = { CN: 0, HK: 0, US: 0, SZB: 0, SHB: 0 };
+                app.c.assets.forEach(a => { 
+                    let k = a.mkt || 'US';
+                    if (k === 'SH' || k === 'SZ') k = 'CN';
+                    if (mktDist[k] !== undefined) mktDist[k] += a.val; 
+                });
+                mk('chartMarket', 'doughnut', { labels: ['A股', '港股', '美股', '深B', '沪B'], datasets: [{ data: [mktDist.CN, mktDist.HK, mktDist.US, mktDist.SZB, mktDist.SHB], backgroundColor: [CS.cyan, CS.warning, CS.primary, '#8b5cf6', '#ec4899'] }] }, null); 
+                
+                app.ui.safeChart('structChart', 'bar', { labels: app.c.partners.map(p => p.name), datasets: [{ label: '本金', data: app.c.partners.map(p => p.cost), backgroundColor: CS.cyan, stack: '0', maxBarThickness: 50 }, { label: '增值', data: app.c.partners.map(p => p.profit), backgroundColor: CS.warning, stack: '0', maxBarThickness: 50 }] }, { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false } } }, plugins: { datalabels: { formatter: v => '￥' + Math.round(v).toLocaleString(), display: 'auto', color: '#333' } } }); 
                 const sortedIndustries = Object.entries(app.c.industries).sort((a, b) => b[1] - a[1]); const indLabels = sortedIndustries.map(i => i[0]); const indData = sortedIndustries.map(i => i[1]); const indPct = indData.map(v => (v / app.c.aum * 100)); const elInd = document.getElementById('chartIndustry'); 
                 if (elInd) { 
-                    app.ui.safeChart('chartIndustry', 'bar', { labels: indLabels, datasets: [{ data: indPct, backgroundColor: PALETTE, borderRadius: 4 }] }, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: v => v.toFixed(2) + '%', color: '#333', font: { weight: 'bold' }, textStrokeWidth: 0 } }, scales: { x: { display: false, max: 100 }, y: { grid: { display: false } } } }); 
+                    app.ui.safeChart('chartIndustry', 'bar', { labels: indLabels, datasets: [{ data: indPct, backgroundColor: PALETTE, borderRadius: 4, maxBarThickness: 50 }] }, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: v => v.toFixed(2) + '%', color: '#333', font: { weight: 'bold' }, textStrokeWidth: 0 } }, scales: { x: { display: false, max: 100 }, y: { grid: { display: false } } } }); 
                 } 
                 const top5 = [...app.c.assets].sort((a, b) => b.val - a.val).slice(0, 5); 
-                app.ui.safeChart('chartCost', 'bar', { labels: top5.map(a => a.name), datasets: [{ label: '持仓成本', data: top5.map(a => a.costAvg), backgroundColor: CS.neutral }, { label: '最新价格', data: top5.map(a => a.price), backgroundColor: CS.primary }] }, { responsive: true, maintainAspectRatio: false, layout: { padding: 0 }, scales: { y: { display: false, grace: '10%' }, x: { grid: { display: false } } }, plugins: { datalabels: { display: true, align: 'end', anchor: 'end', formatter: v => v.toFixed(2), color: '#555', font: { weight: 'normal' }, textStrokeWidth: 0 } } }); 
-                app.ui.safeChart('chartConc', 'bar', { labels: top5.map(a => a.name), datasets: [{ data: top5.map(a => (a.val / app.c.aum * 100)), backgroundColor: [CS.primary, CS.info, CS.warning, CS.cyan, CS.danger], borderRadius: 4 }] }, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: v => v.toFixed(2) + '%', color: '#333', font: { weight: 'bold' }, textStrokeWidth: 0 } }, scales: { x: { display: false, max: 100 }, y: { grid: { display: false } } } }); 
+                app.ui.safeChart('chartCost', 'bar', { labels: top5.map(a => a.name), datasets: [{ label: '持仓成本', data: top5.map(a => a.costAvg), backgroundColor: CS.neutral, maxBarThickness: 50 }, { label: '最新价格', data: top5.map(a => a.val / a.qty), backgroundColor: CS.primary, maxBarThickness: 50 }] }, { responsive: true, maintainAspectRatio: false, layout: { padding: 0 }, scales: { y: { display: false, grace: '10%' }, x: { grid: { display: false } } }, plugins: { datalabels: { display: true, align: 'end', anchor: 'end', formatter: v => v.toFixed(2), color: '#555', font: { weight: 'normal' }, textStrokeWidth: 0 } } }); 
+                app.ui.safeChart('chartConc', 'bar', { labels: top5.map(a => a.name), datasets: [{ data: top5.map(a => (a.val / app.c.aum * 100)), backgroundColor: [CS.primary, CS.info, CS.warning, CS.cyan, CS.danger], borderRadius: 4, maxBarThickness: 50 }] }, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: v => v.toFixed(2) + '%', color: '#333', font: { weight: 'bold' }, textStrokeWidth: 0 } }, scales: { x: { display: false, max: 100 }, y: { grid: { display: false } } } }); 
             },
-            renderHoldings: (filterMkt = null) => { const b = document.getElementById('holdings-body'); let data = app.c.assets; if (filterMkt) data = data.filter(h => (h.mkt || 'US') === filterMkt); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; data.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } data = data.filter(h => h.qty > 0.001); if (!data.length) { b.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">无持仓数据 (或已清仓)</td></tr>'; return; } b.innerHTML = data.map(h => { const mktKey = h.mkt || 'US'; const mkt = MARKETS[mktKey]; const safeCode = Utils.escape(h.code); const codeWithSuffix = getStockCodeWithSuffix(h.code, h.mkt); const safeName = Utils.escape(h.name); const safeInd = Utils.escape(h.ind); return `<tr><td><div class="fw-bold text-dark">${safeName}</div><div class="small text-muted">${Utils.escape(codeWithSuffix)}</div></td><td onclick="app.ui.editIndustry('${safeCode}')"><span class="editable-cell small">${safeInd} <i class="fas fa-pen edit-icon text-muted"></i></span></td><td><span class="tag ${mkt.tag}">${mkt.n}</span></td><td class="text-end fw-bold text-primary">${FMT.pct(h.val / app.c.aum)}</td><td class="text-end font-num">${FMT.val(h.qty)}</td><td class="text-end text-muted font-num">${FMT.money(h.costAvg, mkt.c)}</td><td class="text-end font-num">${FMT.money(h.price, mkt.c)}</td><td class="text-end fw-bold font-num">${FMT.money(h.val)}</td><td class="text-end font-num ${h.pl >= 0 ? 'text-up' : 'text-down'}">${h.pl > 0 ? '+' : ''}${FMT.money(h.pl)}</td><td class="text-end font-num ${h.dayPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.dayPct)}</td><td class="text-end font-num ${h.plPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.plPct)}</td><td class="text-center text-nowrap"><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'BUY')" title="加仓"><i class="fas fa-plus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'SELL')" title="减仓"><i class="fas fa-minus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.editHolding('${safeCode}')" title="编辑"><i class="fas fa-edit"></i></button></td></tr>`; }).join(''); },
+            renderHoldings: (filterMkt = null) => { const b = document.getElementById('holdings-body'); let data = app.c.assets; if (filterMkt) data = data.filter(h => (h.mkt || 'US') === filterMkt); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; data.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } data = data.filter(h => h.qty > 0.001); if (!data.length) { b.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">无持仓数据 (或已清仓)</td></tr>'; return; } b.innerHTML = data.map(h => { const mktKey = h.mkt || 'US'; const mkt = MARKETS[mktKey]; const safeCode = Utils.escape(h.code); const codeWithSuffix = getStockCodeWithSuffix(h.code, h.mkt); const safeName = Utils.escape(h.name); const safeInd = Utils.escape(h.ind); return `<tr><td><div class="fw-bold text-dark">${safeName}</div><div class="small text-muted">${Utils.escape(codeWithSuffix)}</div></td><td onclick="app.ui.editIndustry('${safeCode}')"><span class="editable-cell small">${safeInd} <i class="fas fa-pen edit-icon text-muted"></i></span></td><td><span class="tag ${mkt.tag}">${mkt.n}</span></td><td class="text-end fw-bold text-primary">${FMT.pct(h.val / app.c.aum)}</td><td class="text-end font-num">${FMT.val(h.qty)}</td><td class="text-end text-muted font-num">${FMT.money(h.costAvgOrig, mkt.c)}</td><td class="text-end font-num">${FMT.money(h.price, mkt.c)}</td><td class="text-end fw-bold font-num">${FMT.money(h.val)}</td><td class="text-end font-num ${h.pl >= 0 ? 'text-up' : 'text-down'}">${FMT.money(h.pl)}</td><td class="text-end font-num ${h.dayPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.dayPct)}</td><td class="text-end font-num ${h.plPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.plPct)}</td><td class="text-center text-nowrap"><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'BUY')" title="加仓"><i class="fas fa-plus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'SELL')" title="减仓"><i class="fas fa-minus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.editHolding('${safeCode}')" title="编辑"><i class="fas fa-edit"></i></button></td></tr>`; }).join(''); },
             editHolding: async (code) => { const holdingTrades = app.s.trades.filter(t => t.code === code); if (holdingTrades.length === 0) return alert('未找到该股票的交易记录'); const sortedTrades = holdingTrades.sort((a, b) => new Date(b.date) - new Date(a.date)); await app.logic.editTrade(sortedTrades[0].id); },
             quickTrade: (code, side) => { app.ui.showModal('tradeModal'); document.getElementById('ipt-code').value = code; app.api.smartFetch(code); document.getElementById('ipt-side').value = side; document.getElementById('ipt-date').value = TODAY(); const m = app.api.detect(code); const mktKey = `${m}:${code}`; if (app.s.mkt[mktKey] && app.s.mkt[mktKey].cur > 0) { document.getElementById('ipt-price').value = app.s.mkt[mktKey].cur; } },
             editIndustry: async (code) => { const cur = app.s.stockMeta[code] || ''; const n = prompt("修改行业标签:", cur); if (n !== null && n !== cur) { app.s.stockMeta[code] = n; await db.kv.put({ key: 'stockMeta', val: app.s.stockMeta }); app.logic.recalc(); } },
@@ -1034,7 +1481,7 @@
                         }, () => reject('Load Failed'), 'gbk');
                     });
                 };
-
+    
                 tryTencent('qt.gtimg.cn')
                     .catch(() => { console.log("Retrying with ig50..."); return tryTencent('ig50.gtimg.cn'); })
                     .catch(() => {
@@ -1050,14 +1497,17 @@
                             } catch (e) { app.status.stk = { ok: false, src: 'Failed' }; }
                         }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); }, 'gbk');
                     });
-
+    
                 if (app.ui && typeof app.ui.updateEngineStatus === 'function') { app.ui.updateEngineStatus(); }
             }
         }
     };
     document.addEventListener('DOMContentLoaded', app.init);
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
+
