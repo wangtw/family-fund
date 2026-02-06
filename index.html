@@ -7,7 +7,6 @@
     <meta name="referrer" content="no-referrer">
     <title>合伙基金管理系统 v3.10.1 (Hotfix)</title>
 
-
     <!-- 核心依赖库 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -144,14 +143,11 @@
     
         @media (max-width: 992px) { .top-nav, .controls-right { flex-direction: column; align-items: stretch; } .top-row, .cmd-group { justify-content: space-between; } }
     </style>
-
 </head>
 <body>
 
 <div id="toast-container"></div>
-
 <!-- [PATCH-003] Visual Indicator -->
-
 <div id="save-indicator" class="save-indicator"><i class="fas fa-save"></i> <span>已自动保存</span></div>
 
 <div class="main-container">
@@ -164,7 +160,6 @@
             <div class="top-row">
                 <button class="btn-mini" onclick="app.logic.undo()" title="撤销"><i class="fas fa-undo"></i></button>
                 <button class="btn-mini" onclick="app.api.refresh(true)" title="刷新"><i class="fas fa-sync-alt"></i></button>
-
 
                 <!-- Status Capsule -->
                 <div class="status-capsule" id="status-capsule" onclick="app.ui.showStatusDetail()">
@@ -334,11 +329,9 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <!-- Modals -->
-
 <div class="modal fade" id="statusModal" tabindex="-1"><div class="modal-dialog" style="max-width: 500px;"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title"><i class="fas fa-server me-2"></i>系统健康度</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="status-modal-body" style="max-height: 400px; overflow-y: auto;"><!-- Status content will be injected here --></div></div></div></div>
 <div class="modal fade" id="tradeModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="tradeModal-title">新增交易</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="ipt-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value)"><small id="ipt-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">方向</label><select id="ipt-side" class="form-select"><option value="BUY">买入</option><option value="SELL">卖出</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="ipt-date" class="form-control"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">单价</label><input type="number" id="ipt-price" class="form-control" step="0.001" oninput="app.ui.calcTradeEstimate()"></div><div class="col-6"><label class="form-label fw-bold">数量</label><input type="number" id="ipt-qty" class="form-control" oninput="app.ui.calcTradeEstimate()"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="ipt-fx" class="form-control" placeholder="留空则读取实时汇率"><small class="text-muted" style="font-size:0.7rem;">* 此汇率将永久保存在该笔交易记录中</small></div><div class="mb-3"><label class="form-label fw-bold">佣金 (CNY)</label><input type="number" id="ipt-fee" class="form-control" placeholder="0.00" step="0.01"></div></div><button class="btn btn-primary w-100" id="btn-save-trade" onclick="app.logic.saveTrade()">提交</button><button class="btn btn-danger w-100 mt-2 d-none" id="btn-delete-trade" onclick="app.logic.deleteTrade()">删除此交易</button></div></div></div></div>
 <div class="modal fade" id="quickHoldingModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-bolt me-2"></i>快速持仓录入</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small py-2 px-3 mb-3">将自动生成【初始入金】流水以平衡账目。</div><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="qh-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value, 'qh')"><small id="qh-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">总市值 (CNY)</label><input type="number" id="qh-value" class="form-control" step="0.01" oninput="app.api.updateEstPrice()"></div><div class="col-6"><label class="form-label fw-bold">持股数</label><input type="number" id="qh-qty" class="form-control" step="0.0001" oninput="app.api.updateEstPrice()"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">原币种</label><select id="qh-currency" class="form-select" onchange="app.api.updateFx('qh-currency', 'qh-fx'); app.api.updateEstPrice()"><option value="CNY">CNY</option><option value="USD">USD</option><option value="HKD">HKD</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="qh-date" class="form-control"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="qh-fx" class="form-control" placeholder="切换币种自动填入"><small class="text-muted">* 将锁定为历史汇率</small></div><div class="bg-light p-2 rounded small text-center text-muted">推算单价: <strong id="qh-est-price">--</strong> (原币)</div><button class="btn btn-success w-100 mt-3" onclick="app.logic.addQuickHolding()">录入 (同步生成资金流水)</button></div></div></div></div>
@@ -668,6 +661,9 @@
     
         init: async () => {
             if (!app.s._dirty) app.s._dirty = { ledger: true, mkt: true };
+            // Defensive coding: Re-initialize uiSort if missing (Fixes TypeError reported by users)
+            if (!app.uiSort) app.uiSort = { k: null, d: 1 };
+
             await app.data.initDB();
             const count = await db.trades.count();
             if (count === 0) {
@@ -1071,57 +1067,79 @@
             },
     
             renderAll: (filterMkt = null) => {
-                const c = app.c; const set = (i, v) => { const e = document.getElementById(i); if (e) e.innerText = v; }; const setC = (i, v) => { const e = document.getElementById(i); if (e) e.className = v; };
+                const c = app.c;
+                const set = (i, v) => { const e = document.getElementById(i); if (e) e.innerText = v; };
+                const setC = (i, v) => { const e = document.getElementById(i); if (e) e.className = v; };
                 
-                // Pure Data -> formatted UI
-                set('metric-aum', FMT.money(c.aum)); 
-                set('val-position', c.aum > 0 ? FMT.pct((c.aum - c.cash) / c.aum) : '0.00%'); 
-                set('val-cash-small', FMT.money(c.cash)); 
-                set('val-day-pnl', (c.dayPnl > 0 ? '+' : '') + FMT.money(c.dayPnl)); 
+                // --- METRICS ---
+                set('metric-aum', FMT.money(c.aum));
+                set('val-position', c.aum > 0 ? FMT.pct((c.aum - c.cash) / c.aum) : '0.00%');
+                set('val-cash-small', FMT.money(c.cash));
+                
+                set('val-day-pnl', (c.dayPnl > 0 ? '+' : '') + FMT.money(c.dayPnl));
                 setC('val-day-pnl', 'font-num ' + (c.dayPnl >= 0 ? 'text-up' : 'text-down'));
                 
-                set('metric-profit', (c.totalProf > 0 ? '+' : '') + FMT.money(c.totalProf)); 
+                set('metric-profit', (c.totalProf > 0 ? '+' : '') + FMT.money(c.totalProf));
                 setC('metric-profit', 'metric-value ' + (c.totalProf >= 0 ? 'text-up' : 'text-down'));
                 
-                set('metric-nav', FMT.nav(c.nav)); 
-                const nc = (c.nav - 1); 
-                set('metric-nav-change', (c.nav > 1 ? '+' : '') + FMT.pct(nc)); 
+                set('metric-nav', FMT.nav(c.nav));
+                const nc = (c.nav - 1);
+                set('metric-nav-change', (c.nav > 1 ? '+' : '') + FMT.pct(nc));
                 setC('metric-nav-change', 'fw-bold ' + (nc >= 0 ? 'text-up' : 'text-down'));
                 
-                set('val-shares', FMT.val(c.shares)); 
-                set('val-nav-day-chg', (c.dayNavChg > 0 ? '+' : '') + FMT.pct(c.dayNavChg)); 
+                set('val-shares', FMT.val(c.shares));
+                set('val-nav-day-chg', (c.dayNavChg > 0 ? '+' : '') + FMT.pct(c.dayNavChg));
                 setC('val-nav-day-chg', 'font-num ' + (c.dayNavChg >= 0 ? 'text-up' : 'text-down'));
                 
-                set('metric-xirr', FMT.pct(c.xirr)); 
-                setC('metric-xirr', 'metric-value ' + (c.xirr >= 0 ? 'text-up' : 'text-down')); 
-                set('val-redeem', FMT.money(c.totalRedeem)); 
-                set('val-drawdown', '最大回撤: ' + FMT.pct(c.maxDD)); 
+                set('metric-xirr', FMT.pct(c.xirr));
+                setC('metric-xirr', 'metric-value ' + (c.xirr >= 0 ? 'text-up' : 'text-down'));
+                set('val-redeem', FMT.money(c.totalRedeem));
+                set('val-drawdown', '最大回撤: ' + FMT.pct(c.maxDD));
                 document.getElementById('val-drawdown').title = `区间: ${c.ddPeriod}`;
                 
-                const stkCost = c.assets.reduce((a, b) => a + b.cost, 0); 
-                const stkVal = c.aum - c.cash; 
-                const stkPl = stkVal - stkCost; 
-                set('stk-total-cost', FMT.money(stkCost)); 
-                set('stk-total-val', FMT.money(stkVal)); 
-                set('stk-total-pl', (stkPl > 0 ? '+' : '') + FMT.money(stkPl)); 
-                set('stk-total-roi', stkCost > 0 ? FMT.pct(stkPl / stkCost) : '0.00%'); 
+                // --- SUB-STATS ---
+                const stkCost = c.assets.reduce((a, b) => a + b.cost, 0);
+                const stkVal = c.aum - c.cash;
+                const stkPl = stkVal - stkCost;
+                set('stk-total-cost', FMT.money(stkCost));
+                set('stk-total-val', FMT.money(stkVal));
+                set('stk-total-pl', (stkPl > 0 ? '+' : '') + FMT.money(stkPl));
+                set('stk-total-roi', stkCost > 0 ? FMT.pct(stkPl / stkCost) : '0.00%');
                 set('val-cash', FMT.money(c.cash));
                 
-                const totalGross = c.partners.reduce((s, p) => s + (p.gross || p.cost || 0), 0); 
-                const totalRoi = totalGross > 0 ? (c.aum + c.totalRedeem - totalGross) / totalGross : 0; 
-                set('val-roi-total', (totalRoi > 0 ? '+' : '') + FMT.pct(totalRoi)); 
+                const totalGross = c.partners.reduce((s, p) => s + (p.gross || p.cost || 0), 0);
+                const totalRoi = totalGross > 0 ? (c.aum + c.totalRedeem - totalGross) / totalGross : 0;
+                set('val-roi-total', (totalRoi > 0 ? '+' : '') + FMT.pct(totalRoi));
                 setC('val-roi-total', 'fw-bold ' + (totalRoi >= 0 ? 'text-up' : 'text-down'));
                 
-                app.ui.drawNavChart(); app.ui.drawPerfChart(); app.ui.drawAssetCharts(); app.ui.switchContribTab('val'); app.ui.switchStockTab('val'); app.ui.switchAnalyTab('industry');
-                app.ui.renderHoldings(filterMkt); app.ui.renderPartnerTable(); app.ui.filterLedger('all'); app.ui.updateEngineStatus();
+                // --- DRAW CHARTS ---
+                app.ui.drawNavChart();
+                app.ui.drawPerfChart();
+                app.ui.drawAssetCharts();
                 
-                const dl = document.getElementById('dl-partners'); dl.innerHTML = ''; 
-                const allPartnersUnique = [...new Set(app.s.flows.map(f => f.partner))]; 
-                allPartnersUnique.forEach(p => { const o = document.createElement('option'); o.value = Utils.escape(p); dl.appendChild(o) }); 
+                // --- TABS & TABLES ---
+                app.ui.switchContribTab('val');
+                app.ui.switchStockTab('val');
+                app.ui.switchAnalyTab('industry');
                 
-                // [PATCH-Hotfix] Restored renderPartnerMgmt call
+                app.ui.renderHoldings(filterMkt);
+                app.ui.renderPartnerTable();
+                app.ui.filterLedger('all');
+                app.ui.updateEngineStatus();
+                
+                // --- DROPDOWN ---
+                const dl = document.getElementById('dl-partners');
+                dl.innerHTML = '';
+                const allPartnersUnique = [...new Set(app.s.flows.map(f => f.partner))];
+                allPartnersUnique.forEach(p => {
+                    const o = document.createElement('option');
+                    o.value = Utils.escape(p);
+                    dl.appendChild(o)
+                });
+                
                 app.ui.renderPartnerMgmt(allPartnersUnique);
-                document.getElementById('search-holdings').value = ''; document.getElementById('search-partners').value = '';
+                document.getElementById('search-holdings').value = '';
+                document.getElementById('search-partners').value = '';
             },
             
             // [PATCH-Hotfix] Restored missing renderPartnerMgmt function
@@ -1149,7 +1167,14 @@
                 }); 
             },
     
-            sort: (table, key) => { if (app.uiSort.k === key) app.uiSort.d = -app.uiSort.d; else { app.uiSort.k = key; app.uiSort.d = 1; } if (table === 'holdings') app.ui.renderHoldings(); if (table === 'partners') app.ui.renderPartnerTable(); },
+            sort: (table, key) => {
+                if (app.uiSort.k === key) app.uiSort.d = -app.uiSort.d;
+                else { app.uiSort.k = key; app.uiSort.d = 1; }
+                
+                if (table === 'holdings') app.ui.renderHoldings();
+                if (table === 'partners') app.ui.renderPartnerTable();
+            },
+            
             filterHoldingsByMarket: (mkt) => { const btn = document.getElementById('btn-reset-filter'); if (mkt) { btn.classList.remove('d-none'); app.ui.toast(`筛选: ${mkt}`); } else { btn.classList.add('d-none'); } app.ui.renderHoldings(mkt); },
             updateEngineStatus: () => { const el = document.getElementById('status-capsule'); const txt = el.querySelector('.status-text'); const isFxOk = app.status.fx.ok; const isStkOk = app.status.stk.ok; if (isFxOk && isStkOk) { el.className = 'status-capsule status-ok'; txt.innerText = '系统正常'; } else { el.className = 'status-capsule status-warn'; txt.innerText = (!isFxOk && !isStkOk) ? '服务断开' : (!isFxOk ? '汇率异常' : '行情异常'); } },
             showStatusDetail: async () => {
@@ -1370,11 +1395,100 @@
                 app.ui.safeChart('chartCost', 'bar', { labels: top5.map(a => a.name), datasets: [{ label: '持仓成本', data: top5.map(a => a.costAvg), backgroundColor: CS.neutral, maxBarThickness: 50 }, { label: '最新价格', data: top5.map(a => a.val / a.qty), backgroundColor: CS.primary, maxBarThickness: 50 }] }, { responsive: true, maintainAspectRatio: false, layout: { padding: 0 }, scales: { y: { display: false, grace: '10%' }, x: { grid: { display: false } } }, plugins: { datalabels: { display: true, align: 'end', anchor: 'end', formatter: v => v.toFixed(2), color: '#555', font: { weight: 'normal' }, textStrokeWidth: 0 } } }); 
                 app.ui.safeChart('chartConc', 'bar', { labels: top5.map(a => a.name), datasets: [{ data: top5.map(a => (a.val / app.c.aum * 100)), backgroundColor: [CS.primary, CS.info, CS.warning, CS.cyan, CS.danger], borderRadius: 4, maxBarThickness: 50 }] }, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: v => v.toFixed(2) + '%', color: '#333', font: { weight: 'bold' }, textStrokeWidth: 0 } }, scales: { x: { display: false, max: 100 }, y: { grid: { display: false } } } }); 
             },
-            renderHoldings: (filterMkt = null) => { const b = document.getElementById('holdings-body'); let data = app.c.assets; if (filterMkt) data = data.filter(h => (h.mkt || 'US') === filterMkt); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; data.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } data = data.filter(h => h.qty > 0.001); if (!data.length) { b.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">无持仓数据 (或已清仓)</td></tr>'; return; } b.innerHTML = data.map(h => { const mktKey = h.mkt || 'US'; const mkt = MARKETS[mktKey]; const safeCode = Utils.escape(h.code); const codeWithSuffix = getStockCodeWithSuffix(h.code, h.mkt); const safeName = Utils.escape(h.name); const safeInd = Utils.escape(h.ind); return `<tr><td><div class="fw-bold text-dark">${safeName}</div><div class="small text-muted">${Utils.escape(codeWithSuffix)}</div></td><td onclick="app.ui.editIndustry('${safeCode}')"><span class="editable-cell small">${safeInd} <i class="fas fa-pen edit-icon text-muted"></i></span></td><td><span class="tag ${mkt.tag}">${mkt.n}</span></td><td class="text-end fw-bold text-primary">${FMT.pct(h.val / app.c.aum)}</td><td class="text-end font-num">${FMT.val(h.qty)}</td><td class="text-end text-muted font-num">${FMT.money(h.costAvgOrig, mkt.c)}</td><td class="text-end font-num">${FMT.money(h.price, mkt.c)}</td><td class="text-end fw-bold font-num">${FMT.money(h.val)}</td><td class="text-end font-num ${h.pl >= 0 ? 'text-up' : 'text-down'}">${FMT.money(h.pl)}</td><td class="text-end font-num ${h.dayPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.dayPct)}</td><td class="text-end font-num ${h.plPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.plPct)}</td><td class="text-center text-nowrap"><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'BUY')" title="加仓"><i class="fas fa-plus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'SELL')" title="减仓"><i class="fas fa-minus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.editHolding('${safeCode}')" title="编辑"><i class="fas fa-edit"></i></button></td></tr>`; }).join(''); },
+            
+            renderHoldings: (filterMkt = null) => {
+                const b = document.getElementById('holdings-body');
+                let data = app.c.assets;
+                if (filterMkt) data = data.filter(h => (h.mkt || 'US') === filterMkt);
+                
+                // Defensive Check for uiSort
+                if (app.uiSort && app.uiSort.k) {
+                    const k = app.uiSort.k, d = app.uiSort.d;
+                    data.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d);
+                }
+                
+                data = data.filter(h => h.qty > 0.001);
+                
+                if (!data.length) {
+                    b.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">无持仓数据 (或已清仓)</td></tr>';
+                    return;
+                }
+                
+                b.innerHTML = data.map(h => {
+                    const mktKey = h.mkt || 'US';
+                    const mkt = MARKETS[mktKey];
+                    const safeCode = Utils.escape(h.code);
+                    const codeWithSuffix = getStockCodeWithSuffix(h.code, h.mkt);
+                    const safeName = Utils.escape(h.name);
+                    const safeInd = Utils.escape(h.ind);
+                    
+                    return `<tr>
+                        <td>
+                            <div class="fw-bold text-dark">${safeName}</div>
+                            <div class="small text-muted">${Utils.escape(codeWithSuffix)}</div>
+                        </td>
+                        <td onclick="app.ui.editIndustry('${safeCode}')">
+                            <span class="editable-cell small">${safeInd} <i class="fas fa-pen edit-icon text-muted"></i></span>
+                        </td>
+                        <td><span class="tag ${mkt.tag}">${mkt.n}</span></td>
+                        <td class="text-end fw-bold text-primary">${FMT.pct(h.val / app.c.aum)}</td>
+                        <td class="text-end font-num">${FMT.val(h.qty)}</td>
+                        <td class="text-end text-muted font-num">${FMT.money(h.costAvgOrig, mkt.c)}</td>
+                        <td class="text-end font-num">${FMT.money(h.price, mkt.c)}</td>
+                        <td class="text-end fw-bold font-num">${FMT.money(h.val)}</td>
+                        <td class="text-end font-num ${h.pl >= 0 ? 'text-up' : 'text-down'}">${FMT.money(h.pl)}</td>
+                        <td class="text-end font-num ${h.dayPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.dayPct)}</td>
+                        <td class="text-end font-num ${h.plPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.plPct)}</td>
+                        <td class="text-center text-nowrap">
+                            <button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'BUY')" title="加仓"><i class="fas fa-plus-circle"></i></button>
+                            <button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'SELL')" title="减仓"><i class="fas fa-minus-circle"></i></button>
+                            <button class="btn-icon-action" onclick="app.ui.editHolding('${safeCode}')" title="编辑"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            },
+            
             editHolding: async (code) => { const holdingTrades = app.s.trades.filter(t => t.code === code); if (holdingTrades.length === 0) return alert('未找到该股票的交易记录'); const sortedTrades = holdingTrades.sort((a, b) => new Date(b.date) - new Date(a.date)); await app.logic.editTrade(sortedTrades[0].id); },
             quickTrade: (code, side) => { app.ui.showModal('tradeModal'); document.getElementById('ipt-code').value = code; app.api.smartFetch(code); document.getElementById('ipt-side').value = side; document.getElementById('ipt-date').value = TODAY(); const m = app.api.detect(code); const mktKey = `${m}:${code}`; if (app.s.mkt[mktKey] && app.s.mkt[mktKey].cur > 0) { document.getElementById('ipt-price').value = app.s.mkt[mktKey].cur; } },
             editIndustry: async (code) => { const cur = app.s.stockMeta[code] || ''; const n = prompt("修改行业标签:", cur); if (n !== null && n !== cur) { app.s.stockMeta[code] = n; await db.kv.put({ key: 'stockMeta', val: app.s.stockMeta }); app.logic.recalc(); } },
-            renderPartnerTable: () => { const tb = document.getElementById('partner-body'); let ps = [...app.c.partners]; ps = ps.filter(p => p.val > 0.01); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; ps.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } if (ps.length === 0) { tb.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-3">无活跃合伙人 (资产为0的不显示)</td></tr>'; return; } tb.innerHTML = ps.map(p => { return `<tr><td><strong>${Utils.escape(p.name)}</strong></td><td><div class="d-flex align-items-center"><span class="small me-2 text-muted" style="width:50px">${FMT.pct(p.shares / app.c.shares)}</span><div class="progress flex-grow-1" style="height:4px;"><div class="progress-bar bg-primary" style="width:${p.shares / app.c.shares * 100}%"></div></div></div></td><td class="text-end fw-bold font-num">${FMT.money(p.val)}</td><td class="text-end text-muted font-num">${FMT.money(p.cost)}</td><td class="text-end font-num ${p.profit >= 0 ? 'text-up' : 'text-down'}">${FMT.money(p.profit)}</td><td class="text-end font-num ${p.roi >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(p.roi)}</td><td class="text-end fw-bold font-num">${FMT.pct(p.xirr)}</td><td class="text-end small">${p.days} 天</td><td class="text-end text-warning small font-num">${p.redeem > 0 ? FMT.money(p.redeem) : '-'}</td></tr>`; }).join(''); },
+            
+            renderPartnerTable: () => {
+                const tb = document.getElementById('partner-body');
+                let ps = [...app.c.partners];
+                ps = ps.filter(p => p.val > 0.01);
+                
+                if (app.uiSort && app.uiSort.k) {
+                    const k = app.uiSort.k, d = app.uiSort.d;
+                    ps.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d);
+                }
+                
+                if (ps.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-3">无活跃合伙人 (资产为0的不显示)</td></tr>';
+                    return;
+                }
+                
+                tb.innerHTML = ps.map(p => {
+                    return `<tr>
+                        <td><strong>${Utils.escape(p.name)}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="small me-2 text-muted" style="width:50px">${FMT.pct(p.shares / app.c.shares)}</span>
+                                <div class="progress flex-grow-1" style="height:4px;">
+                                    <div class="progress-bar bg-primary" style="width:${p.shares / app.c.shares * 100}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end fw-bold font-num">${FMT.money(p.val)}</td>
+                        <td class="text-end text-muted font-num">${FMT.money(p.cost)}</td>
+                        <td class="text-end font-num ${p.profit >= 0 ? 'text-up' : 'text-down'}">${FMT.money(p.profit)}</td>
+                        <td class="text-end font-num ${p.roi >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(p.roi)}</td>
+                        <td class="text-end fw-bold font-num">${FMT.pct(p.xirr)}</td>
+                        <td class="text-end small">${p.days} 天</td>
+                        <td class="text-end text-warning small font-num">${p.redeem > 0 ? FMT.money(p.redeem) : '-'}</td>
+                    </tr>`;
+                }).join('');
+            },
+            
             highlightSearch: (tableType, keyword) => { if (app._searchTimer) clearTimeout(app._searchTimer); app._searchTimer = setTimeout(() => { const tbody = document.getElementById(tableType === 'holdings' ? 'holdings-body' : 'partner-body'); const rows = tbody.querySelectorAll('tr'); const lowerKw = keyword.toLowerCase().trim(); rows.forEach(row => { if (!lowerKw) { row.style.display = ''; row.classList.remove('search-highlight'); return; } const text = row.innerText.toLowerCase(); if (text.includes(lowerKw)) { row.style.display = ''; row.classList.add('search-highlight'); } else { row.style.display = 'none'; } }); }, 300); },
             filterLedger: (t, btn) => { if (btn) { btn.parentNode.querySelectorAll('.btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } const rows = []; if (t !== 'flow' && t !== 'journal') app.s.trades.forEach(x => rows.push({ d: x.date, t: '交易', i: x.name, v: -x.price * x.qty * x.fx * (x.side === 'BUY' ? 1 : -1), id: x.id, type: 'trade', side: x.side, qty: x.qty, code: x.code, mkt: x.market })); if (t !== 'trade' && t !== 'journal') app.s.flows.forEach(x => rows.push({ d: x.date, t: '资金', i: x.partner, v: x.type === 'DEPOSIT' ? x.amount : -x.amount, id: x.id, type: 'flow' })); if (t !== 'trade' && t !== 'flow') app.s.journals.forEach(x => rows.push({ d: x.date, t: '收支', i: x.note, v: ['DIVIDEND', 'INTEREST'].includes(x.type) ? x.amount : -x.amount, id: x.id, type: 'journal' })); rows.sort((a, b) => new Date(b.d) - new Date(a.d)); document.getElementById('ledger-body').innerHTML = rows.map(r => { if (r.t === '交易') { const tradeDetail = `${r.side === 'BUY' ? '买入' : '卖出'} ${FMT.val(r.qty)}股`; return `<tr onclick="app.ui.editLedgerItem('${r.type}','${r.id}')" style="cursor:pointer;" title="点击编辑"><td class="font-num">${r.d}</td><td><span class="badge bg-light text-dark border">${r.t}</span></td><td>${Utils.escape(r.i)}</td><td><small class="text-muted">${tradeDetail}</small></td><td class="text-end font-num ${r.v >= 0 ? 'text-up' : 'text-down'}">${r.v > 0 ? '+' : ''}${FMT.money(r.v)}</td></tr>`; } else { return `<tr onclick="app.ui.editLedgerItem('${r.type}','${r.id}')" style="cursor:pointer;" title="点击编辑"><td class="font-num">${r.d}</td><td><span class="badge bg-light text-dark border">${r.t}</span></td><td>${Utils.escape(r.i)}</td><td>-</td><td class="text-end font-num ${r.v >= 0 ? 'text-up' : 'text-down'}">${r.v > 0 ? '+' : ''}${FMT.money(r.v)}</td></tr>`; } }).join(''); },
             editLedgerItem: async (type, id) => { if (type === 'trade') { await app.logic.editTrade(id); } else if (type === 'flow' || type === 'journal') { alert(`⚠️ ${type === 'flow' ? '资金流水' : '收支记录'} 编辑功能暂未实现\n\n提示：您可以通过【设置】-【下载备份】导出数据，手动编辑后再恢复。`); } },
@@ -1486,15 +1600,55 @@
                     .catch(() => { console.log("Retrying with ig50..."); return tryTencent('ig50.gtimg.cn'); })
                     .catch(() => {
                         console.log("Falling back to Sina...");
-                        app.api.load(`https://hq.sinajs.cn/list=${qStr.split(',').slice(2).join(',')}`, () => {
+                        // [Fix-Sina] Rebuild query string for Sina specifically
+                        // Sina uses 'gb_' for US, and has different indices for HK
+                        const sinaQ = cds.map(c => {
+                            const m = app.api.detect(c);
+                            // Sina US prefix override: 'gb_' instead of 'us'
+                            const p = (m === 'US') ? 'gb_' : app.api.getPrefix(m, c);
+                            // Sina US codes are usually lowercase
+                            return (m === 'US') ? (p + c.toLowerCase()) : (p + c);
+                        }).join(',');
+
+                        app.api.load(`https://hq.sinajs.cn/list=${sinaQ},hkHSI`, () => {
                             try {
                                 cds.forEach(c => {
-                                    const m = app.api.detect(c); const p = app.api.getPrefix(m, c); const sinaVar = window[`hq_str_${p}${c}`];
-                                    if (sinaVar) { const sp = sinaVar.split(','); if (sp.length > 3) { app.s.mkt[`${m}:${c}`] = { cur: parseFloat(sp[3]), pre: parseFloat(sp[2]) }; } }
+                                    const m = app.api.detect(c); 
+                                    // Construct variable name based on logic above
+                                    const p = (m === 'US') ? 'gb_' : app.api.getPrefix(m, c);
+                                    const varName = (m === 'US') ? `hq_str_${p}${c.toLowerCase()}` : `hq_str_${p}${c}`;
+                                    const sinaVar = window[varName];
+                                    
+                                    if (sinaVar) { 
+                                        const sp = sinaVar.split(',');
+                                        // Market-Specific Parsing (The Linus Fix)
+                                        let cur = 0, pre = 0;
+                                        if (m === 'HK') {
+                                            // HK: Idx 6 is Current, Idx 3 is PrevClose
+                                            cur = parseFloat(sp[6]); pre = parseFloat(sp[3]);
+                                        } else if (m === 'US') {
+                                            // US (gb_): Idx 1 is Current, Idx 26 is PreClose (approx)
+                                            cur = parseFloat(sp[1]); pre = parseFloat(sp[26]) || cur;
+                                        } else {
+                                            // CN: Idx 3 is Current, Idx 2 is PrevClose
+                                            cur = parseFloat(sp[3]); pre = parseFloat(sp[2]);
+                                        }
+                                        
+                                        if (cur > 0) { 
+                                            app.s.mkt[`${m}:${c}`] = { cur, pre }; 
+                                            if (m === 'SH' || m === 'SZ') app.s.mkt[`CN:${c}`] = app.s.mkt[`${m}:${c}`];
+                                        } 
+                                    }
                                 });
+                                // Sina HSI special case
+                                if (window.hq_str_hkHSI) {
+                                    const hsiSp = window.hq_str_hkHSI.split(',');
+                                    app.s.mkt['IDX:HSI'] = { cur: parseFloat(hsiSp[6]) };
+                                }
+
                                 app.s._dirty.mkt = true; 
                                 app.logic.recalc(); persistMktUpdates(); app.status.stk = { ok: true, src: 'Sina' }; if (showToast && fxSuccess) app.ui.toast("股票行情已更新 (备用源)");
-                            } catch (e) { app.status.stk = { ok: false, src: 'Failed' }; }
+                            } catch (e) { console.error(e); app.status.stk = { ok: false, src: 'Failed' }; }
                         }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); }, 'gbk');
                     });
     
@@ -1510,4 +1664,3 @@
 
 </body>
 </html>
-
