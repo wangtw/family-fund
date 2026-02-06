@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- [PATCH-GitHub] 核心修复：No-Referrer 绕过防盗链 -->
+    <!-- [PATCH-GitHub] 核心修复：No-Referrer 绕过防盗链 (Meta层) -->
     <meta name="referrer" content="no-referrer">
     <title>合伙基金管理系统 v3.10.1 (Hotfix)</title>
 
@@ -332,24 +332,13 @@
 </div>
 
 <!-- Modals -->
-<div class="modal fade" id="statusModal" tabindex="-1"><div class="modal-dialog" style="max-width: 500px;"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title"><i class="fas fa-server me-2"></i>系统健康度</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="status-modal-body" style="max-height: 400px; overflow-y: auto;"><!-- Status content will be injected here --></div></div></div></div>
+<div class="modal fade" id="statusModal" tabindex="-1"><div class="modal-dialog" style="max-width: 500px;"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title"><i class="fas fa-server me-2"></i>系统健康度</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="status-modal-body" style="max-height: 400px; overflow-y: auto;"></div></div></div></div>
 <div class="modal fade" id="tradeModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="tradeModal-title">新增交易</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="ipt-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value)"><small id="ipt-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">方向</label><select id="ipt-side" class="form-select"><option value="BUY">买入</option><option value="SELL">卖出</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="ipt-date" class="form-control"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">单价</label><input type="number" id="ipt-price" class="form-control" step="0.001" oninput="app.ui.calcTradeEstimate()"></div><div class="col-6"><label class="form-label fw-bold">数量</label><input type="number" id="ipt-qty" class="form-control" oninput="app.ui.calcTradeEstimate()"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="ipt-fx" class="form-control" placeholder="留空则读取实时汇率"><small class="text-muted" style="font-size:0.7rem;">* 此汇率将永久保存在该笔交易记录中</small></div><div class="mb-3"><label class="form-label fw-bold">佣金 (CNY)</label><input type="number" id="ipt-fee" class="form-control" placeholder="0.00" step="0.01"></div></div><button class="btn btn-primary w-100" id="btn-save-trade" onclick="app.logic.saveTrade()">提交</button><button class="btn btn-danger w-100 mt-2 d-none" id="btn-delete-trade" onclick="app.logic.deleteTrade()">删除此交易</button></div></div></div></div>
 <div class="modal fade" id="quickHoldingModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-bolt me-2"></i>快速持仓录入</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small py-2 px-3 mb-3">将自动生成【初始入金】流水以平衡账目。</div><div class="mb-3"><label class="form-label fw-bold">代码</label><input type="text" id="qh-code" class="form-control font-num" placeholder="AAPL, 00700" onkeyup="app.api.debouncedFetch(this.value, 'qh')"><small id="qh-name" class="text-muted">...</small></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">总市值 (CNY)</label><input type="number" id="qh-value" class="form-control" step="0.01" oninput="app.api.updateEstPrice()"></div><div class="col-6"><label class="form-label fw-bold">持股数</label><input type="number" id="qh-qty" class="form-control" step="0.0001" oninput="app.api.updateEstPrice()"></div></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">原币种</label><select id="qh-currency" class="form-select" onchange="app.api.updateFx('qh-currency', 'qh-fx'); app.api.updateEstPrice()"><option value="CNY">CNY</option><option value="USD">USD</option><option value="HKD">HKD</option></select></div><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="qh-date" class="form-control"></div></div><div class="mb-3"><label class="form-label fw-bold">汇率 (强制)</label><input type="number" id="qh-fx" class="form-control" placeholder="切换币种自动填入"><small class="text-muted">* 将锁定为历史汇率</small></div><div class="bg-light p-2 rounded small text-center text-muted">推算单价: <strong id="qh-est-price">--</strong> (原币)</div><button class="btn btn-success w-100 mt-3" onclick="app.logic.addQuickHolding()">录入 (同步生成资金流水)</button></div></div></div></div>
 <div class="modal fade" id="flowModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">资金进出</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label fw-bold">合伙人</label><input type="text" id="ipt-partner" class="form-control" list="dl-partners" placeholder="选择或输入姓名..."><datalist id="dl-partners"></datalist></div><div class="mb-3"><label class="form-label fw-bold">类型</label><select id="ipt-flow-type" class="form-select"><option value="DEPOSIT">入金</option><option value="WITHDRAW">出金</option></select></div><div class="mb-3"><label class="form-label fw-bold">金额 (CNY)</label><input type="number" id="ipt-flow-amt" class="form-control" step="0.01"></div><div class="row g-2 mb-3"><div class="col-6"><label class="form-label fw-bold">日期</label><input type="date" id="ipt-flow-date" class="form-control"></div><div class="col-6"><label class="form-label fw-bold">当时净值</label><input type="number" id="ipt-flow-nav" class="form-control" step="0.0001" placeholder="留空则使用当前净值"></div></div><button class="btn btn-primary w-100" onclick="app.logic.addFlow()">确认</button></div></div></div></div>
 <div class="modal fade" id="journalModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title fw-bold text-dark">运营收支</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label fw-bold">日期</label><input type="date" id="ipt-jour-date" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">科目</label><select id="ipt-jour-type" class="form-select" onchange="app.ui.toggleReinvest(this.value)"><option value="DIVIDEND">股息分红 (+)</option><option value="INTEREST">利息收入 (+)</option><option value="FEE">交易费用 (-)</option><option value="EXPENSE">运营支出 (-)</option></select></div><div class="mb-3"><label class="form-label fw-bold">金额 (CNY)</label><input type="number" id="ipt-jour-amt" class="form-control" step="0.01"></div><div class="mb-3"><label class="form-label fw-bold">说明</label><input type="text" id="ipt-jour-note" class="form-control"></div><div class="form-check mb-3 d-none" id="div-reinvest"><input class="form-check-input" type="checkbox" id="chk-reinvest"><label class="form-check-label fw-bold text-success" for="chk-reinvest">同时生成红利再投交易 (自动买入)</label></div><button class="btn btn-warning w-100" onclick="app.logic.addJournal()">提交</button></div></div></div></div>
 <div class="modal fade" id="calibrateModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">现金校准</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between mb-3"><span class="text-muted">系统余额：</span><span class="fw-bold" id="calib-sys-val">--</span></div><div class="mb-3"><label class="form-label fw-bold">校准日期</label><input type="date" class="form-control" id="calib-date"></div><div class="mb-3"><label class="form-label fw-bold">真实余额 (CNY)</label><input type="number" class="form-control" id="calib-real-val"></div><div class="mb-4"><label class="form-label fw-bold">差异说明 (必填)</label><input type="text" class="form-control" id="calib-note" placeholder="例如：利息漏记、汇率差调整"></div><button class="btn btn-dark w-100" onclick="app.logic.submitCalibration()">平账</button></div></div></div></div>
-<div class="modal fade" id="mgmtModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">设置与管理</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
-    <div class="d-grid gap-3"><button class="btn btn-outline-primary" onclick="app.configOps.open()"><i class="fas fa-cog"></i> 系统配置</button><div class="mb-3 border-bottom pb-3">
-        <label class="form-label fw-bold small text-muted text-uppercase">基准指数锚点 (Benchmark Anchor)</label>
-        <div class="input-group">
-            <span class="input-group-text small">HSI</span>
-            <input type="number" id="cfg-bench-hsi" class="form-control form-control-sm font-num" placeholder="起跑点 (如17000)">
-            <span class="input-group-text small">CSI300</span>
-            <input type="number" id="cfg-bench-csi" class="form-control form-control-sm font-num" placeholder="起跑点 (如3800)">
-            <button class="btn btn-sm btn-outline-primary" onclick="app.logic.saveBenchConfig()">保存</button>
-        </div>
-        <div class="form-text small">设置基金成立日的指数点位，用于绘制 60/40 基准线。</div>
-    </div><button class="btn btn-outline-dark" onclick="app.ui.showModal('partnerModal')"><i class="fas fa-users-cog"></i> 合伙人管理</button><button class="btn btn-outline-secondary" onclick="app.data.backup()">下载备份 (.json)</button><button class="btn btn-outline-secondary" onclick="document.getElementById('file-restore').click()">恢复备份</button><input type="file" id="file-restore" style="display:none" onchange="app.data.restore(this)" accept=".json"><hr><button class="btn btn-outline-success" onclick="app.data.exportXLSX()">导出管理报表 (Excel)</button><button class="btn btn-outline-success" onclick="document.getElementById('file-xlsx').click()">导入 Excel 数据</button><input type="file" id="file-xlsx" style="display:none" onchange="app.data.importXLSX(this)" accept=".xlsx"><button class="btn btn-outline-secondary" onclick="app.ui.openCalib()">现金校准</button><hr><button class="btn btn-danger" onclick="app.data.nuke()">清空数据 (需密码)</button><button class="btn btn-warning" onclick="app.data.loadThinkDemo()">重置为演示数据</button></div></div></div></div></div>
+<div class="modal fade" id="mgmtModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">设置与管理</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-grid gap-3"><button class="btn btn-outline-primary" onclick="app.configOps.open()"><i class="fas fa-cog"></i> 系统配置</button><div class="mb-3 border-bottom pb-3"><label class="form-label fw-bold small text-muted text-uppercase">基准指数锚点 (Benchmark Anchor)</label><div class="input-group"><span class="input-group-text small">HSI</span><input type="number" id="cfg-bench-hsi" class="form-control form-control-sm font-num" placeholder="起跑点 (如17000)"><span class="input-group-text small">CSI300</span><input type="number" id="cfg-bench-csi" class="form-control form-control-sm font-num" placeholder="起跑点 (如3800)"><button class="btn btn-sm btn-outline-primary" onclick="app.logic.saveBenchConfig()">保存</button></div><div class="form-text small">设置基金成立日的指数点位，用于绘制 60/40 基准线。</div></div><button class="btn btn-outline-dark" onclick="app.ui.showModal('partnerModal')"><i class="fas fa-users-cog"></i> 合伙人管理</button><button class="btn btn-outline-secondary" onclick="app.data.backup()">下载备份 (.json)</button><button class="btn btn-outline-secondary" onclick="document.getElementById('file-restore').click()">恢复备份</button><input type="file" id="file-restore" style="display:none" onchange="app.data.restore(this)" accept=".json"><hr><button class="btn btn-outline-success" onclick="app.data.exportXLSX()">导出管理报表 (Excel)</button><button class="btn btn-outline-success" onclick="document.getElementById('file-xlsx').click()">导入 Excel 数据</button><input type="file" id="file-xlsx" style="display:none" onchange="app.data.importXLSX(this)" accept=".xlsx"><button class="btn btn-outline-secondary" onclick="app.ui.openCalib()">现金校准</button><hr><button class="btn btn-danger" onclick="app.data.nuke()">清空数据 (需密码)</button><button class="btn btn-warning" onclick="app.data.loadThinkDemo()">重置为演示数据</button></div></div></div></div></div>
 <div class="modal fade" id="partnerModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">合伙人管理</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="alert alert-info small">僵尸账号(本金0)可物理删除；已清盘(本金>0)可隐藏。</div><ul id="mgmt-partner-list" class="list-group mb-3"></ul><div class="input-group"><input type="text" id="ipt-rename-old" class="form-control" placeholder="选择上方名字" readonly><input type="text" id="ipt-rename-new" class="form-control" placeholder="新名字"><button class="btn btn-primary" onclick="app.logic.renamePartner()">改名</button></div></div></div></div></div>
 <div class="modal fade" id="configModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">系统配置</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">应用名称</label><input type="text" id="cfgAppName" class="form-control" placeholder="输入应用名称"></div><div class="mb-3"><label class="form-label">备份提醒阈值（次）</label><input type="number" id="cfgThreshold" class="form-control" placeholder="5" min="1" max="100"><small class="text-muted">操作次数达到此值时提醒备份</small></div><div class="mb-3"><label class="form-label">汇率接口源 (FX Source)</label><select id="cfgFxSource" class="form-select"><option value="auto">⚡ 自动优选 (推荐)</option><option value="tencent">🐧 腾讯财经</option><option value="sina">👁️ 新浪财经</option><option value="frank">🇪🇺 Frankfurter</option><option value="yun">☁️ YunAPI</option></select><small class="text-muted">如果遇到汇率更新失败，可尝试手动切换接口。</small></div><div class="mb-3"><label class="form-label">默认汇率选项</label><div id="cfgRates" class="d-flex gap-3 flex-wrap"><label><input type="checkbox" value="CNY"> CNY</label><label><input type="checkbox" value="USD"> USD</label><label><input type="checkbox" value="EUR"> EUR</label><label><input type="checkbox" value="HKD"> HKD</label><label><input type="checkbox" value="JPY"> JPY</label><label><input type="checkbox" value="GBP"> GBP</label></div></div><div class="mb-3"><label class="form-label">操作指南（支持HTML）</label><textarea id="cfgGuide" rows="5" class="form-control" placeholder="输入操作指南内容，支持HTML标签..."></textarea></div><div class="mb-3"><label class="form-label">避坑手册（支持HTML）</label><textarea id="cfgManual" rows="5" class="form-control" placeholder="输入避坑手册内容，支持HTML标签..."></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-primary" onclick="app.configOps.save()">保存</button><button type="button" class="btn btn-secondary" onclick="app.configOps.reset()">重置</button><button type="button" class="btn btn-info" onclick="app.configOps.export()">导出配置</button><label class="btn btn-success mb-0"><input type="file" hidden accept=".json" onchange="app.configOps.import(event)">导入配置</label></div></div></div></div>
 <div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-book-open me-2"></i>操作指南 v3.10.1</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="nav nav-tabs mb-3" id="guideTabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#g-core">核心逻辑</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-operations">业务操作</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-backup">备份恢复</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-pitfalls">避坑手册</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-faq">常见问题</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#g-whatsnew">v3.10.1 更新</button></li></ul><div class="tab-content"><div class="tab-pane fade show active" id="g-core"><div class="alert alert-danger mb-4"><strong>🚨 一级警报：生死攸关</strong><hr class="my-2"><ul class="mb-0"><li>本系统 <strong>没有任何云端后台</strong>！所有数据都存储在您当前浏览器的缓存里。</li><li><strong>严禁手动清理浏览器缓存</strong>，否则您的几百万资产记录将瞬间灰飞烟灭。</li><li><strong>[每周五收盘后下载备份]</strong> 是本系统的生存铁律。没做备份等于没做账。</li></ul></div><div class="card mb-3"><div class="card-body"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-brain me-2"></i>30秒看懂"披萨理论"</h6><p class="mb-2">在乱点按钮之前，先理解系统的"大脑"是怎么思考的，防止你觉得系统算错了。</p><ul><li><strong>总资产 (AUM)</strong> = 你的现金余额 + 所有股票当前的市值。</li><li><strong>份额 (Shares)</strong> = 这是一个"绝对数量"，代表你拥有的权益份数。就像你拥有 <strong>5块</strong> 披萨。</li><li><strong>净值 (NAV)</strong> = <strong>1块</strong> 披萨现在值多少钱。<ul><li>系统公式：<code class="bg-light px-2 rounded">净值 = 总资产 / 总份额</code></li></ul></li><li><strong>赚钱逻辑</strong>：你的<strong>份额数量</strong>通常是不变的（除非你加钱买份额或提钱卖份额）。但随着股票涨跌，<strong>净值</strong>会变大变小，你的总资产（<code>份额</code> x <code>净值</code>）也就随之波动。</li></ul></div></div></div><div class="tab-pane fade" id="g-operations"><h5 class="fw-bold text-primary mb-4">📅 每周五的标准作业流程</h5><div class="alert alert-info"><i class="fas fa-plane-departure me-2"></i>请像飞机起飞检查一样，按顺序执行这 3 步。</div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-primary"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-power-off me-2"></i>Step 1：启动与健康检查</div><div class="card-body"><ol><li><strong>打开文件</strong>：双击 <code>合伙基金管理系统 v3.10.1.html</code>。</li><li><strong>看右上角胶囊状态</strong>：<ul><li>🟢 <strong>绿色 (系统正常)</strong>：汇率和股价都更新了，可以开始干活。</li><li>🔴 <strong>红色/黄色</strong>：断网或接口卡了。<ul><li><em>动作</em>：点击右上角的刷新按钮。或者点击胶囊查看是哪个数据源挂了。</li></ul></li></ul></li><li><strong>看左上角总资产</strong>：确认数字不是 0。</li></ol></div></div></div><div class="col-md-8"><div class="card h-100 border-warning"><div class="card-header bg-warning text-dark fw-bold"><i class="fas fa-edit me-2"></i>Step 2：录入本周发生的变动</div><div class="card-body"><p class="small text-muted mb-3">根据实际情况，选择以下对应的场景操作：</p><h6 class="fw-bold mb-2">场景 A：新增合伙人</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：在输入框里直接打字输入新名字（系统会自动记录）。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果这是基金成立的第一笔钱，<code>当时净值</code> 默认为 1.0000。如果不是，系统会自动抓取当前净值。</li></ul></li><li><strong>确认</strong>。</li></ol><hr><h6 class="fw-bold mb-2">场景 B：资金注入</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：下拉选择老合伙人的名字。</li><li><strong>类型</strong>：选择"入金"。</li><li><strong>金额</strong>：输入人民币金额。</li><li><strong>日期</strong>：默认为今天。<ul><li>⚠️ <strong>警告</strong>：如果是补录以前的入金，<strong>必须</strong>修改日期，并填入那一天的历史净值。否则会发生"时空扭曲"，导致份额计算错误。</li></ul></li></ol><hr><h6 class="fw-bold mb-2">场景 C：资金赎回</h6><button class="btn btn-primary btn-sm mb-2">🟦 资金</button><ol class="small"><li><strong>合伙人</strong>：选择要提钱的人。</li><li><strong>类型</strong>：选择"出金"。</li><li><strong>金额</strong>：输入他要提走的钱。</li><li>⚠️ <strong>系统限制</strong>：出金金额不得超过权益市值。</li></ol><hr><h6 class="fw-bold mb-2">场景 D：买卖股票</h6><button class="btn btn-info btn-sm mb-2">🔵 交易</button><ol class="small"><li><strong>检查现金</strong>：确保左侧面板的 <code>现金</code> 余额够买。</li><li><strong>代码</strong>：输入代码（如 <code>00700</code>、<code>600519</code>、<code>AAPL</code>）。<strong>停手 1 秒！</strong> 等下面显示出股票名称再继续。</li><li><strong>方向/价格/数量</strong>：如实填写。</li><li><strong>汇率</strong>：别动它，系统会自动填好。</li><li><strong>提交</strong>。</li></ol></div></div></div><div class="card border-success mt-3"><div class="card-header bg-success text-white fw-bold"><i class="fas fa-save me-2"></i>Step 3：备份 (Backup) —— <strong>最重要的一步</strong></div><div class="card-body"><p class="fw-bold text-danger mb-3">不做这一步，前面的功夫可能白费。</p><ol><li>点击右上角的 <strong>⚙️ 设置</strong>。</li><li>点击 <strong>"下载备份 (.json)"</strong>。</li><li>浏览器会下载一个类似 <code>Backup_2026-01-28.json</code> 的文件。</li><li><strong>动作</strong>：将此文件发送给自己的 <strong>微信文件传输助手</strong>、<strong>邮箱</strong> 或 <strong>网盘</strong>。<strong>别只放在桌面上！</strong></li></ol></div></div></div><div class="tab-pane fade" id="g-backup"><h5 class="fw-bold text-primary mb-4">💾 防灾备份指南</h5><div class="row g-4"><div class="col-md-6"><div class="card h-100"><div class="card-header bg-info text-white fw-bold"><i class="fas fa-clock me-2"></i>标准备份频率</div><div class="card-body"><ul class="mb-0"><li><strong>每周五下午 15:05</strong> (A股收盘后) -必做备份</li><li><strong>每月底</strong> - 归档备份（建议保留每月最后一个周五的备份）</li></ul></div></div></div><div class="col-md-6"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold"><i class="fas fa-download me-2"></i>导出步骤</div><div class="card-body"><ol class="mb-0"><li>点击右上角 <strong>【设置】</strong>。</li><li>点击 <strong>【下载备份 (.json)】</strong>。</li><li>文件会自动下载，文件名包含今天的日期。</li><li><strong>把它存到网盘/微信收藏/你对象的聊天记录里，别只放在桌面上！</strong></li></ol></div></div></div></div><div class="tab-pane fade" id="g-whatsnew"><div class="alert alert-success mb-4"><i class="fas fa-rocket me-2"></i><strong>v3.10.1 (Hotfix) 更新说明</strong></div><div class="row g-4"><div class="col-md-4"><div class="card h-100"><div class="card-header bg-primary text-white fw-bold">Patch-Hotfix</div><div class="card-body small"><p>修复合伙人管理错误。</p><p>找回了丢失的 `renderPartnerMgmt` 函数，现在合伙人管理面板可以正常使用了。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-success text-white fw-bold">Patch-Smart Layout</div><div class="card-body small"><p>环形图智能布局。</p><p>1. 自动过滤 0 资产；<br>2. 采用“交错排序算法”重排扇区，防止小比例标签挤在一起，提升美观度。</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-header bg-warning text-dark fw-bold">Patch-No Benchmark</div><div class="card-body small"><p>移除基准线。</p><p>应要求移除了 60/40 基准线，图表现在更加聚焦于基金本身的净值走势。</p></div></div></div></div></div></div></div></div></div></div>
@@ -370,7 +359,7 @@
         },
         prec: (n) => new Decimal(n || 0).toNumber()
     };
-    
+
     const Utils = {
         escape: (str) => {
             if (typeof str !== 'string') return str;
@@ -408,7 +397,8 @@
     
     const CS = { primary: '#3b82f6', primaryLight: '#60a5fa', success: '#06b6d4', warning: '#f59e0b', danger: '#ef4444', info: '#8b5cf6', cyan: '#0ea5e9', neutral: '#94a3b8', dark: '#1e293b' };
     const PALETTE = [CS.primary, CS.success, CS.warning, CS.info, CS.danger, CS.cyan, CS.neutral, '#888'];
-    const DB_NAME = "FundMaster_v3_Pro", TODAY = () => new Date().toISOString().split('T')[0];
+    const DB_NAME = "FundMaster_v3_Pro";
+    const TODAY = Utils.today;
     
     const MARKETS = {
         'US': { c: 'USD', tag: 'tag-us', n: '美股', suffix: 'US' },
@@ -452,7 +442,7 @@
         calcLedger: (trades, flows, journals, rates) => {
             let cash = 0, totalShares = 0, totalPrinc = 0, totalRedeem = 0;
             const pMap = {}, holdings = {}, flowLog = [];
-    
+
             // 1. Process Flows (Partner Capital)
             [...flows].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(f => {
                 if (!pMap[f.partner]) pMap[f.partner] = { shares: 0, cost: 0, flows: [], date: f.date, gross: 0 };
@@ -478,14 +468,14 @@
                 flowLog.push({ d: f.date, v: flowVal });
                 totalShares = Calc.add(totalShares, sign * f.shares);
             });
-    
+
             // 2. Process Journals (Operational Cash)
             journals.forEach(j => {
                 const amt = Calc.prec(j.amount);
                 const isIncome = ['DIVIDEND', 'INTEREST', 'ADJUST_ADD'].includes(j.type);
                 cash = Calc.add(cash, isIncome ? amt : -amt);
             });
-    
+
             // 3. Process Trades (Investment Portfolio)
             [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
                 const k = `${t.market}:${t.code}`;
@@ -495,7 +485,7 @@
                 const fx = t.fx || rates[MARKETS[t.market || 'US'].c] || 1;
                 const amt = Calc.mul(Calc.mul(t.price, t.qty), fx);
                 const amtOrig = Calc.mul(t.price, t.qty);
-    
+
                 if (t.side === 'BUY') {
                     holdings[k].qty = Calc.add(holdings[k].qty, t.qty);
                     holdings[k].cost = Calc.add(holdings[k].cost, amt);
@@ -517,10 +507,10 @@
                     holdings[k].qty = 0; holdings[k].cost = 0; holdings[k].costOrig = 0; 
                 }
             });
-    
+
             return { cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog };
         },
-    
+
         calcAssets: (holdings, mktData, rates, meta) => {
             let stockVal = 0, dayPnl = 0; 
             const assetList = [], industries = {};
@@ -545,7 +535,7 @@
                 const ind = meta[h.code] || '未分类';
                 if (!industries[ind]) industries[ind] = 0; 
                 industries[ind] += val;
-    
+
                 // Asset derivation
                 assetList.push({
                     ...h,
@@ -560,7 +550,7 @@
             
             return { stockVal, dayPnl, assetList, industries };
         },
-    
+
         xirr: (values, guess = 0.1) => {
             if (values.length < 2) return 0;
             const d0 = new Date(values[0].d);
@@ -578,7 +568,7 @@
             }
             return isFinite(x) ? x : 0;
         },
-    
+
         analyzeStats: (hist) => {
             if (!hist || hist.length < 10) return { maxDD: 0, ddPeriod: '--', alpha: '--', beta: '--', sharpe: '--' };
             let maxNav = 0, maxDD = 0, peakDate = '', valleyDate = '', tempPeakDate = '';
@@ -1381,15 +1371,31 @@
         },
     
         api: {
-            detect: c => { if (/^[A-Z]+$/.test(c)) return 'US'; if (/^\d{5}$/.test(c)) return 'HK'; if (c.startsWith('200')) return 'SZB'; if (c.startsWith('900')) return 'SHB'; if (c.startsWith('6') || c.startsWith('9') || c.startsWith('5')) return 'SH'; return 'SZ'; },
+            detect: c => {
+                c = String(c || '').trim(); // Defensive: Handle number inputs
+                if (/^[A-Z]+$/.test(c)) return 'US';
+                if (/^\d{5}$/.test(c)) return 'HK'; 
+                if (c.startsWith('200')) return 'SZB'; 
+                if (c.startsWith('900')) return 'SHB'; 
+                if (c.startsWith('6') || c.startsWith('9') || c.startsWith('5')) return 'SH'; 
+                return 'SZ'; 
+            },
             _timer: null,
             debouncedFetch: (code, prefix = 'ipt') => { clearTimeout(app.api._timer); app.api._timer = setTimeout(() => app.api.smartFetch(code, prefix), 500); },
             getPrefix: (m, c) => { if (m === 'HK') return 'hk'; if (m === 'US') return 'us'; if (m === 'SH' || m === 'SHB') return 'sh'; if (m === 'SZ' || m === 'SZB') return 'sz'; return (c.startsWith('6') || c.startsWith('5')) ? 'sh' : 'sz'; },
             smartFetch: (c, p = 'ipt') => { if (!c) return; document.getElementById(p + '-name').innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; const m = app.api.detect(c); const pf = app.api.getPrefix(m, c); app.api.load(`https://qt.gtimg.cn/q=${pf}${c}`, () => { const d = window[`v_${pf}${c}`]; if (d) { const v = d.split('~'); document.getElementById(p + '-name').innerText = v[1]; document.getElementById(p + '-price').value = v[3]; } else { document.getElementById(p + '-name').innerText = '未知'; } }, () => { document.getElementById(p + '-name').innerText = '失败'; }, 'gbk'); },
             updateEstPrice: () => { const v = parseFloat(document.getElementById('qh-value').value) || 0, q = parseFloat(document.getElementById('qh-qty').value) || 0; if (v > 0 && q > 0) document.getElementById('qh-est-price').innerText = (v / q).toFixed(3); },
             updateFx: (s, t) => { const c = document.getElementById(s).value; if (app.s.rates[c]) document.getElementById(t).value = app.s.rates[c].toFixed(3); },
-            // [PATCH-GitHub] Added charset support
-            load: (s, cb, eb, c) => { const e = document.createElement('script'); e.src = s; if(c) e.charset = c; e.onload = () => { cb && cb(); e.remove(); }; e.onerror = () => { eb && eb(); e.remove(); }; document.body.appendChild(e); },
+            // [PATCH-GitHub] Added charset support AND no-referrer policy
+            load: (s, cb, eb, c) => { 
+                const e = document.createElement('script'); 
+                e.src = s; 
+                if(c) e.charset = c; 
+                e.referrerPolicy = "no-referrer"; // The stealth cloak
+                e.onload = () => { cb && cb(); e.remove(); }; 
+                e.onerror = () => { eb && eb(); e.remove(); }; 
+                document.body.appendChild(e); 
+            },
             fetchers: {
                 Tencent: () => new Promise((resolve, reject) => {
                     app.api.load('https://qt.gtimg.cn/q=r_hkHKDCNY,r_usUSDCNY', () => {
@@ -1402,26 +1408,16 @@
                         } catch (e) { reject(e); }
                     }, () => reject('Tencent load failed'), 'gbk');
                 }),
-                // [PATCH-FX] Converted Sina fetch to Script Injection to avoid CORS errors on GitHub Pages
                 Sina: () => new Promise((resolve, reject) => {
                     app.api.load('https://hq.sinajs.cn/list=fx_susdcny,fx_shkdcny', () => {
                         try {
-                            // Sina returns: var hq_str_fx_susdcny="14:28:00,7.3044,7.3249,7.1852,7.4441,14:28:00";
-                            // Format varies, but index 1 or 3 is usually price. Let's parse robustly.
                             const parseSinaFx = (str) => {
                                 if(!str) return 0;
                                 const parts = str.split(',');
-                                // Usually parts[1] is Bid, parts[2] is Ask, parts[3] is Price
-                                // For fx_susdcny, it's often: time, bid, ask, last, ...
                                 return parseFloat(parts[3]) || parseFloat(parts[1]) || 0;
                             }
-                            
-                            const usStr = window.hq_str_fx_susdcny;
-                            const hkStr = window.hq_str_fx_shkdcny;
-                            
-                            const us = parseSinaFx(usStr);
-                            const hk = parseSinaFx(hkStr);
-                            
+                            const us = parseSinaFx(window.hq_str_fx_susdcny);
+                            const hk = parseSinaFx(window.hq_str_fx_shkdcny);
                             if (us > 0 && hk > 0) resolve({ rates: { USD: us, HKD: hk, CNY: 1 }, src: 'Sina' }); 
                             else reject('Sina FX data empty');
                         } catch (e) { reject(e); }
@@ -1457,7 +1453,6 @@
                 let qStr = "r_hkHSI,r_sh000300";
                 if (cds.length) { const stockQ = cds.map(c => { const m = app.api.detect(c); const pf = app.api.getPrefix(m, c); return pf + c; }).join(','); qStr += "," + stockQ; }
                 
-                // [PATCH-Stock] Dual-Source Logic: qt.gtimg.cn -> ig50.gtimg.cn -> hq.sinajs.cn
                 const tryTencent = (domain) => {
                     return new Promise((resolve, reject) => {
                         app.api.load(`https://${domain}/q=${qStr}&t=${Date.now()}`, () => {
@@ -1481,15 +1476,47 @@
                     .catch(() => { console.log("Retrying with ig50..."); return tryTencent('ig50.gtimg.cn'); })
                     .catch(() => {
                         console.log("Falling back to Sina...");
-                        app.api.load(`https://hq.sinajs.cn/list=${qStr.split(',').slice(2).join(',')}`, () => {
+                        // [Smart Fallback] Rebuild query string for Sina specifically
+                        const sinaQ = cds.map(c => {
+                            const m = app.api.detect(c);
+                            if (m === 'US') return 'gb_' + c.toLowerCase();
+                            if (m === 'HK') return 'rt_hk' + c;
+                            return app.api.getPrefix(m, c) + c;
+                        }).join(',');
+
+                        app.api.load(`https://hq.sinajs.cn/list=${sinaQ},hkHSI`, () => {
                             try {
                                 cds.forEach(c => {
-                                    const m = app.api.detect(c); const p = app.api.getPrefix(m, c); const sinaVar = window[`hq_str_${p}${c}`];
-                                    if (sinaVar) { const sp = sinaVar.split(','); if (sp.length > 3) { app.s.mkt[`${m}:${c}`] = { cur: parseFloat(sp[3]), pre: parseFloat(sp[2]) }; } }
+                                    const m = app.api.detect(c); 
+                                    let varName = '';
+                                    if (m === 'US') varName = `hq_str_gb_${c.toLowerCase()}`;
+                                    else if (m === 'HK') varName = `hq_str_rt_hk${c}`;
+                                    else varName = `hq_str_${app.api.getPrefix(m, c)}${c}`;
+                                    
+                                    const sinaVar = window[varName];
+                                    if (sinaVar) { 
+                                        const sp = sinaVar.split(',');
+                                        let cur = 0, pre = 0;
+                                        if (m === 'HK') {
+                                            cur = parseFloat(sp[6]); pre = parseFloat(sp[3]);
+                                        } else if (m === 'US') {
+                                            cur = parseFloat(sp[1]); pre = parseFloat(sp[26]) || cur;
+                                        } else {
+                                            cur = parseFloat(sp[3]); pre = parseFloat(sp[2]);
+                                        }
+                                        if (cur > 0) { 
+                                            app.s.mkt[`${m}:${c}`] = { cur, pre: pre || cur }; 
+                                            if (m === 'SH' || m === 'SZ') app.s.mkt[`CN:${c}`] = app.s.mkt[`${m}:${c}`];
+                                        } 
+                                    }
                                 });
+                                if (window.hq_str_hkHSI) {
+                                    const hsiSp = window.hq_str_hkHSI.split(',');
+                                    app.s.mkt['IDX:HSI'] = { cur: parseFloat(hsiSp[6]) };
+                                }
                                 app.s._dirty.mkt = true; 
                                 app.logic.recalc(); persistMktUpdates(); app.status.stk = { ok: true, src: 'Sina' }; if (showToast && fxSuccess) app.ui.toast("股票行情已更新 (备用源)");
-                            } catch (e) { app.status.stk = { ok: false, src: 'Failed' }; }
+                            } catch (e) { console.error(e); app.status.stk = { ok: false, src: 'Failed' }; }
                         }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); }, 'gbk');
                     });
     
