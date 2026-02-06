@@ -370,7 +370,7 @@
         },
         prec: (n) => new Decimal(n || 0).toNumber()
     };
-
+    
     const Utils = {
         escape: (str) => {
             if (typeof str !== 'string') return str;
@@ -408,7 +408,7 @@
     
     const CS = { primary: '#3b82f6', primaryLight: '#60a5fa', success: '#06b6d4', warning: '#f59e0b', danger: '#ef4444', info: '#8b5cf6', cyan: '#0ea5e9', neutral: '#94a3b8', dark: '#1e293b' };
     const PALETTE = [CS.primary, CS.success, CS.warning, CS.info, CS.danger, CS.cyan, CS.neutral, '#888'];
-    const DB_NAME = "FundMaster_v3_Pro";
+    const DB_NAME = "FundMaster_v3_Pro", TODAY = () => new Date().toISOString().split('T')[0];
     
     const MARKETS = {
         'US': { c: 'USD', tag: 'tag-us', n: '美股', suffix: 'US' },
@@ -452,7 +452,7 @@
         calcLedger: (trades, flows, journals, rates) => {
             let cash = 0, totalShares = 0, totalPrinc = 0, totalRedeem = 0;
             const pMap = {}, holdings = {}, flowLog = [];
-
+    
             // 1. Process Flows (Partner Capital)
             [...flows].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(f => {
                 if (!pMap[f.partner]) pMap[f.partner] = { shares: 0, cost: 0, flows: [], date: f.date, gross: 0 };
@@ -478,14 +478,14 @@
                 flowLog.push({ d: f.date, v: flowVal });
                 totalShares = Calc.add(totalShares, sign * f.shares);
             });
-
+    
             // 2. Process Journals (Operational Cash)
             journals.forEach(j => {
                 const amt = Calc.prec(j.amount);
                 const isIncome = ['DIVIDEND', 'INTEREST', 'ADJUST_ADD'].includes(j.type);
                 cash = Calc.add(cash, isIncome ? amt : -amt);
             });
-
+    
             // 3. Process Trades (Investment Portfolio)
             [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
                 const k = `${t.market}:${t.code}`;
@@ -495,7 +495,7 @@
                 const fx = t.fx || rates[MARKETS[t.market || 'US'].c] || 1;
                 const amt = Calc.mul(Calc.mul(t.price, t.qty), fx);
                 const amtOrig = Calc.mul(t.price, t.qty);
-
+    
                 if (t.side === 'BUY') {
                     holdings[k].qty = Calc.add(holdings[k].qty, t.qty);
                     holdings[k].cost = Calc.add(holdings[k].cost, amt);
@@ -517,10 +517,10 @@
                     holdings[k].qty = 0; holdings[k].cost = 0; holdings[k].costOrig = 0; 
                 }
             });
-
+    
             return { cash, totalShares, totalPrinc, totalRedeem, pMap, holdings, flowLog };
         },
-
+    
         calcAssets: (holdings, mktData, rates, meta) => {
             let stockVal = 0, dayPnl = 0; 
             const assetList = [], industries = {};
@@ -545,7 +545,7 @@
                 const ind = meta[h.code] || '未分类';
                 if (!industries[ind]) industries[ind] = 0; 
                 industries[ind] += val;
-
+    
                 // Asset derivation
                 assetList.push({
                     ...h,
@@ -560,7 +560,7 @@
             
             return { stockVal, dayPnl, assetList, industries };
         },
-
+    
         xirr: (values, guess = 0.1) => {
             if (values.length < 2) return 0;
             const d0 = new Date(values[0].d);
@@ -578,7 +578,7 @@
             }
             return isFinite(x) ? x : 0;
         },
-
+    
         analyzeStats: (hist) => {
             if (!hist || hist.length < 10) return { maxDD: 0, ddPeriod: '--', alpha: '--', beta: '--', sharpe: '--' };
             let maxNav = 0, maxDD = 0, peakDate = '', valleyDate = '', tempPeakDate = '';
@@ -654,7 +654,7 @@
                 document.getElementById('cfgFxSource').value = c.fxSource || 'auto';
                 new bootstrap.Modal(document.getElementById('configModal')).show();
             },
-            export: () => { const blob = new Blob([JSON.stringify(app.s.config, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `fund_config_${Utils.today()}.json`; a.click(); },
+            export: () => { const blob = new Blob([JSON.stringify(app.s.config, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `fund_config_${TODAY()}.json`; a.click(); },
             import: async (e) => { const file = e.target.files[0]; if (!file) return; const text = await file.text(); try { const json = JSON.parse(text); app.s.config = { ...DEFAULT_CONFIG, ...json }; await db.kv.put({ key: 'config', val: app.s.config }); app.configOps.apply(); app.configOps.open(); app.ui.toast('✅ 配置已导入'); } catch (err) { alert('配置导入失败'); } }
         },
     
@@ -779,7 +779,7 @@
                 app.s._dirty = { ledger: true, mkt: true };
                 await app.data.bgSave(); app.logic.recalc(); app.ui.toast("Think演示数据已加载");
             },
-            backup: () => { const data = JSON.parse(JSON.stringify(app.s)); data._README_ = "FundMaster v3.9.3 Backup"; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'json' })); a.download = `Backup_${Utils.today()}.json`; a.click(); },
+            backup: () => { const data = JSON.parse(JSON.stringify(app.s)); data._README_ = "FundMaster v3.9.3 Backup"; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'json' })); a.download = `Backup_${TODAY()}.json`; a.click(); },
             restore: (i) => { const r = new FileReader(); r.onload = async e => { if (!confirm("⚠️ 恢复将覆盖当前数据。继续？")) { i.value = ''; return; } try { const d = JSON.parse(e.target.result); await app.data.restoreSnapshot(d); alert('✅ 恢复成功'); } catch { alert('❌ 文件错误'); } finally { i.value = ''; } }; r.readAsText(i.files[0]); },
             
             // [PATCH-002] Lazy Load for Excel Export
@@ -798,7 +798,7 @@
                 const metaRows = Object.entries(app.s.stockMeta).map(([k, v]) => ({ "代码": k, "行业": v }));
                 XLSX.utils.book_append_sheet(w, XLSX.utils.json_to_sheet(metaRows), 'meta');
                 
-                XLSX.writeFile(w, `FundReport_${Utils.today()}.xlsx`); 
+                XLSX.writeFile(w, `FundReport_${TODAY()}.xlsx`); 
             },
             
             // [PATCH-002] Lazy Load for Excel Import
@@ -886,11 +886,11 @@
                 // Phase 3: History & Stats
                 // Determine XIRR
                 // Optimized: Only calc XIRR on recalc, but using flowLog + current AUM
-                const xirr = Kernel.xirr([...flowLog, { d: Utils.today(), v: aum }]);
+                const xirr = Kernel.xirr([...flowLog, { d: TODAY(), v: aum }]);
                 
                 // History Management (Volatile part of state)
                 let hist = app.s.navHist || [];
-                const td = Utils.today();
+                const td = TODAY();
                 
                 // Enforce Silence Period (Logic)
                 const inceptionDate = s.flows.length > 0 ? new Date(s.flows[0].date) : new Date();
@@ -930,7 +930,7 @@
                     const depositFlows = p.flows.filter(f => f.v < 0);
                     if (depositFlows.length > 0) {
                         depositFlows.sort((a, b) => new Date(a.d) - new Date(b.d));
-                        days = Math.floor((new Date(Utils.today()) - new Date(depositFlows[0].d)) / (1000 * 60 * 60 * 24));
+                        days = Math.floor((new Date(TODAY()) - new Date(depositFlows[0].d)) / (1000 * 60 * 60 * 24));
                     }
                     
                     // Calc individual XIRR
@@ -991,7 +991,7 @@
                     const modalEl = document.getElementById('tradeModal'); 
                     const editId = modalEl.dataset.editId; const isEdit = !!editId; 
                     const code = app.sanitizeInput(get('ipt-code')).toUpperCase(); 
-                    const date = get('ipt-date') || Utils.today(); const side = get('ipt-side'); 
+                    const date = get('ipt-date') || TODAY(); const side = get('ipt-side'); 
                     const price = parseFloat(get('ipt-price')); const qty = parseFloat(get('ipt-qty')); 
                     let fx = parseFloat(get('ipt-fx')); const fee = parseFloat(get('ipt-fee')) || 0; 
                     if (!code || !price || !qty) return alert('请填写完整信息'); 
@@ -1015,7 +1015,7 @@
                     if (isEdit) { const idx = app.s.trades.findIndex(t => t.id === editId); if (idx === -1) return alert('交易记录未找到'); app.s.trades[idx] = { ...app.s.trades[idx], date, code, name: document.getElementById('ipt-name').innerText, market: app.api.detect(code), side, price, qty, fx }; app.ui.toast('✅ 交易已更新'); } 
                     else { 
                         const t = { id: Utils.uuid(), date, code, name: document.getElementById('ipt-name').innerText, market: app.api.detect(code), side, price, qty, fx }; 
-                        if (t.side === 'BUY') { const totalCost = Calc.add(Calc.mul(Calc.mul(t.price, t.qty), fx), fee); if (totalCost > app.c.cash && new Date(t.date) >= new Date(Utils.today())) { return alert(`❌ 资金不足！缺 ¥${Calc.fmtMoney(totalCost - app.c.cash)}`); } } 
+                        if (t.side === 'BUY') { const totalCost = Calc.add(Calc.mul(Calc.mul(t.price, t.qty), fx), fee); if (totalCost > app.c.cash && new Date(t.date) >= new Date(TODAY())) { return alert(`❌ 资金不足！缺 ¥${Calc.fmtMoney(totalCost - app.c.cash)}`); } } 
                         app.s.trades.push(t); 
                         if (fee > 0) app.s.journals.push({ id: Utils.uuid(), date: t.date, type: 'FEE', amount: fee, note: `交易费用: ${t.name}` }); 
                         app.ui.toast('✅ 交易已添加'); 
@@ -1024,13 +1024,13 @@
                 } catch (e) { alert(e.message); } finally { app.releaseLock(); } 
             },
             deleteTrade: async () => { const modalEl = document.getElementById('tradeModal'); const editId = modalEl.dataset.editId; if (!editId) return; if (!confirm('⚠️ 确定删除此交易记录？')) return; app.s.trades = app.s.trades.filter(t => t.id !== editId); app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(modalEl).hide(); app.ui.toast('🗑️ 交易已删除'); },
-            addQuickHolding: async () => { try { await app.acquireLock(); const get = id => document.getElementById(id).value; const code = app.sanitizeInput(get('qh-code')).toUpperCase(); const val = parseFloat(get('qh-value')), qty = parseFloat(get('qh-qty')); const date = get('qh-date') || Utils.today(); let fx = parseFloat(get('qh-fx')); if (get('qh-currency')) sessionStorage.setItem('FM_PREF_LAST_CURRENCY', get('qh-currency')); if (!fx) fx = app.s.rates[get('qh-currency')] || 1; const price = (get('qh-currency') === 'CNY') ? (val / fx / qty) : (val / qty); const t = { id: Utils.uuid(), date, code, name: document.getElementById('qh-name').innerText, market: app.api.detect(code), side: 'BUY', price: Calc.prec(price), qty, fx }; if (!app.s.stockMeta[code]) app.s.stockMeta[code] = '未分类'; app.s.trades.push(t); const totalCostCNY = Calc.mul(val, 1); const f = { id: Utils.uuid(), date, partner: '系统初始化', type: 'DEPOSIT', amount: totalCostCNY, shares: Calc.div(totalCostCNY, app.c.nav || 1) }; app.s.flows.push(f); app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('quickHoldingModal')).hide(); app.ui.toast("✅ 快速持仓已录入"); } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
+            addQuickHolding: async () => { try { await app.acquireLock(); const get = id => document.getElementById(id).value; const code = app.sanitizeInput(get('qh-code')).toUpperCase(); const val = parseFloat(get('qh-value')), qty = parseFloat(get('qh-qty')); const date = get('qh-date') || TODAY(); let fx = parseFloat(get('qh-fx')); if (get('qh-currency')) sessionStorage.setItem('FM_PREF_LAST_CURRENCY', get('qh-currency')); if (!fx) fx = app.s.rates[get('qh-currency')] || 1; const price = (get('qh-currency') === 'CNY') ? (val / fx / qty) : (val / qty); const t = { id: Utils.uuid(), date, code, name: document.getElementById('qh-name').innerText, market: app.api.detect(code), side: 'BUY', price: Calc.prec(price), qty, fx }; if (!app.s.stockMeta[code]) app.s.stockMeta[code] = '未分类'; app.s.trades.push(t); const totalCostCNY = Calc.mul(val, 1); const f = { id: Utils.uuid(), date, partner: '系统初始化', type: 'DEPOSIT', amount: totalCostCNY, shares: Calc.div(totalCostCNY, app.c.nav || 1) }; app.s.flows.push(f); app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('quickHoldingModal')).hide(); app.ui.toast("✅ 快速持仓已录入"); } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
             addFlow: async () => { 
                 try { 
                     await app.acquireLock(); 
-                    const date = document.getElementById('ipt-flow-date').value || Utils.today(); 
+                    const date = document.getElementById('ipt-flow-date').value || TODAY(); 
                     const manualNav = parseFloat(document.getElementById('ipt-flow-nav').value); 
-                    if (date !== Utils.today() && !manualNav) { alert("⚠️ 补录历史资金时，必须填写【当时净值】！"); return; } 
+                    if (date !== TODAY() && !manualNav) { alert("⚠️ 补录历史资金时，必须填写【当时净值】！"); return; } 
                     const amt = parseFloat(document.getElementById('ipt-flow-amt').value); 
                     const nav = manualNav || app.c.nav; 
                     const partner = app.sanitizeInput(document.getElementById('ipt-partner').value); 
@@ -1049,8 +1049,8 @@
                     app.s.flows.push(f); app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('flowModal')).hide(); 
                 } catch (e) { alert(e.message); } finally { app.releaseLock(); } 
             },
-            addJournal: async () => { try { await app.acquireLock(); const amt = parseFloat(document.getElementById('ipt-jour-amt').value); const date = document.getElementById('ipt-jour-date').value || Utils.today(); const type = document.getElementById('ipt-jour-type').value; const note = app.sanitizeInput(document.getElementById('ipt-jour-note').value); const j = { id: Utils.uuid(), date, type, amount: amt, note: note }; app.s.journals.push(j); const reinvest = document.getElementById('chk-reinvest').checked; if (type === 'DIVIDEND' && reinvest) { setTimeout(() => { alert("✅ 分红已记录。\n\n请确认复投交易。"); app.ui.showModal('tradeModal'); document.getElementById('ipt-side').value = 'BUY'; document.getElementById('ipt-date').value = date; }, 500); } app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('journalModal')).hide(); } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
-            submitCalibration: async () => { const r = parseFloat(document.getElementById('calib-real-val').value); const d = document.getElementById('calib-date').value || Utils.today(); const note = app.sanitizeInput(document.getElementById('calib-note').value); if (isNaN(r)) return; if (!note) return alert("⚠️ 请填写差异说明！"); const diff = Calc.sub(r, app.c.cash); if (Math.abs(diff) > 0.01) { app.s.journals.push({ id: Utils.uuid(), date: d, type: diff > 0 ? 'ADJUST_ADD' : 'ADJUST_SUB', amount: Math.abs(diff), note: `[系统平账] ${note}` }); app.s._dirty.ledger = true; app.logic.recalc(); } bootstrap.Modal.getInstance(document.getElementById('calibrateModal')).hide(); }
+            addJournal: async () => { try { await app.acquireLock(); const amt = parseFloat(document.getElementById('ipt-jour-amt').value); const date = document.getElementById('ipt-jour-date').value || TODAY(); const type = document.getElementById('ipt-jour-type').value; const note = app.sanitizeInput(document.getElementById('ipt-jour-note').value); const j = { id: Utils.uuid(), date, type, amount: amt, note: note }; app.s.journals.push(j); const reinvest = document.getElementById('chk-reinvest').checked; if (type === 'DIVIDEND' && reinvest) { setTimeout(() => { alert("✅ 分红已记录。\n\n请确认复投交易。"); app.ui.showModal('tradeModal'); document.getElementById('ipt-side').value = 'BUY'; document.getElementById('ipt-date').value = date; }, 500); } app.s._dirty.ledger = true; app.logic.recalc(); bootstrap.Modal.getInstance(document.getElementById('journalModal')).hide(); } catch (e) { alert(e.message); } finally { app.releaseLock(); } },
+            submitCalibration: async () => { const r = parseFloat(document.getElementById('calib-real-val').value); const d = document.getElementById('calib-date').value || TODAY(); const note = app.sanitizeInput(document.getElementById('calib-note').value); if (isNaN(r)) return; if (!note) return alert("⚠️ 请填写差异说明！"); const diff = Calc.sub(r, app.c.cash); if (Math.abs(diff) > 0.01) { app.s.journals.push({ id: Utils.uuid(), date: d, type: diff > 0 ? 'ADJUST_ADD' : 'ADJUST_SUB', amount: Math.abs(diff), note: `[系统平账] ${note}` }); app.s._dirty.ledger = true; app.logic.recalc(); } bootstrap.Modal.getInstance(document.getElementById('calibrateModal')).hide(); }
         },
     
         ui: {
@@ -1367,13 +1367,13 @@
             },
             renderHoldings: (filterMkt = null) => { const b = document.getElementById('holdings-body'); let data = app.c.assets; if (filterMkt) data = data.filter(h => (h.mkt || 'US') === filterMkt); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; data.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } data = data.filter(h => h.qty > 0.001); if (!data.length) { b.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">无持仓数据 (或已清仓)</td></tr>'; return; } b.innerHTML = data.map(h => { const mktKey = h.mkt || 'US'; const mkt = MARKETS[mktKey]; const safeCode = Utils.escape(h.code); const codeWithSuffix = getStockCodeWithSuffix(h.code, h.mkt); const safeName = Utils.escape(h.name); const safeInd = Utils.escape(h.ind); return `<tr><td><div class="fw-bold text-dark">${safeName}</div><div class="small text-muted">${Utils.escape(codeWithSuffix)}</div></td><td onclick="app.ui.editIndustry('${safeCode}')"><span class="editable-cell small">${safeInd} <i class="fas fa-pen edit-icon text-muted"></i></span></td><td><span class="tag ${mkt.tag}">${mkt.n}</span></td><td class="text-end fw-bold text-primary">${FMT.pct(h.val / app.c.aum)}</td><td class="text-end font-num">${FMT.val(h.qty)}</td><td class="text-end text-muted font-num">${FMT.money(h.costAvgOrig, mkt.c)}</td><td class="text-end font-num">${FMT.money(h.price, mkt.c)}</td><td class="text-end fw-bold font-num">${FMT.money(h.val)}</td><td class="text-end font-num ${h.pl >= 0 ? 'text-up' : 'text-down'}">${FMT.money(h.pl)}</td><td class="text-end font-num ${h.dayPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.dayPct)}</td><td class="text-end font-num ${h.plPct >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(h.plPct)}</td><td class="text-center text-nowrap"><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'BUY')" title="加仓"><i class="fas fa-plus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.quickTrade('${safeCode}', 'SELL')" title="减仓"><i class="fas fa-minus-circle"></i></button><button class="btn-icon-action" onclick="app.ui.editHolding('${safeCode}')" title="编辑"><i class="fas fa-edit"></i></button></td></tr>`; }).join(''); },
             editHolding: async (code) => { const holdingTrades = app.s.trades.filter(t => t.code === code); if (holdingTrades.length === 0) return alert('未找到该股票的交易记录'); const sortedTrades = holdingTrades.sort((a, b) => new Date(b.date) - new Date(a.date)); await app.logic.editTrade(sortedTrades[0].id); },
-            quickTrade: (code, side) => { app.ui.showModal('tradeModal'); document.getElementById('ipt-code').value = code; app.api.smartFetch(code); document.getElementById('ipt-side').value = side; document.getElementById('ipt-date').value = Utils.today(); const m = app.api.detect(code); const mktKey = `${m}:${code}`; if (app.s.mkt[mktKey] && app.s.mkt[mktKey].cur > 0) { document.getElementById('ipt-price').value = app.s.mkt[mktKey].cur; } },
+            quickTrade: (code, side) => { app.ui.showModal('tradeModal'); document.getElementById('ipt-code').value = code; app.api.smartFetch(code); document.getElementById('ipt-side').value = side; document.getElementById('ipt-date').value = TODAY(); const m = app.api.detect(code); const mktKey = `${m}:${code}`; if (app.s.mkt[mktKey] && app.s.mkt[mktKey].cur > 0) { document.getElementById('ipt-price').value = app.s.mkt[mktKey].cur; } },
             editIndustry: async (code) => { const cur = app.s.stockMeta[code] || ''; const n = prompt("修改行业标签:", cur); if (n !== null && n !== cur) { app.s.stockMeta[code] = n; await db.kv.put({ key: 'stockMeta', val: app.s.stockMeta }); app.logic.recalc(); } },
             renderPartnerTable: () => { const tb = document.getElementById('partner-body'); let ps = [...app.c.partners]; ps = ps.filter(p => p.val > 0.01); if (app.uiSort.k) { const k = app.uiSort.k, d = app.uiSort.d; ps.sort((a, b) => (a[k] > b[k] ? 1 : -1) * d); } if (ps.length === 0) { tb.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-3">无活跃合伙人 (资产为0的不显示)</td></tr>'; return; } tb.innerHTML = ps.map(p => { return `<tr><td><strong>${Utils.escape(p.name)}</strong></td><td><div class="d-flex align-items-center"><span class="small me-2 text-muted" style="width:50px">${FMT.pct(p.shares / app.c.shares)}</span><div class="progress flex-grow-1" style="height:4px;"><div class="progress-bar bg-primary" style="width:${p.shares / app.c.shares * 100}%"></div></div></div></td><td class="text-end fw-bold font-num">${FMT.money(p.val)}</td><td class="text-end text-muted font-num">${FMT.money(p.cost)}</td><td class="text-end font-num ${p.profit >= 0 ? 'text-up' : 'text-down'}">${FMT.money(p.profit)}</td><td class="text-end font-num ${p.roi >= 0 ? 'text-up' : 'text-down'}">${FMT.pct(p.roi)}</td><td class="text-end fw-bold font-num">${FMT.pct(p.xirr)}</td><td class="text-end small">${p.days} 天</td><td class="text-end text-warning small font-num">${p.redeem > 0 ? FMT.money(p.redeem) : '-'}</td></tr>`; }).join(''); },
             highlightSearch: (tableType, keyword) => { if (app._searchTimer) clearTimeout(app._searchTimer); app._searchTimer = setTimeout(() => { const tbody = document.getElementById(tableType === 'holdings' ? 'holdings-body' : 'partner-body'); const rows = tbody.querySelectorAll('tr'); const lowerKw = keyword.toLowerCase().trim(); rows.forEach(row => { if (!lowerKw) { row.style.display = ''; row.classList.remove('search-highlight'); return; } const text = row.innerText.toLowerCase(); if (text.includes(lowerKw)) { row.style.display = ''; row.classList.add('search-highlight'); } else { row.style.display = 'none'; } }); }, 300); },
             filterLedger: (t, btn) => { if (btn) { btn.parentNode.querySelectorAll('.btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } const rows = []; if (t !== 'flow' && t !== 'journal') app.s.trades.forEach(x => rows.push({ d: x.date, t: '交易', i: x.name, v: -x.price * x.qty * x.fx * (x.side === 'BUY' ? 1 : -1), id: x.id, type: 'trade', side: x.side, qty: x.qty, code: x.code, mkt: x.market })); if (t !== 'trade' && t !== 'journal') app.s.flows.forEach(x => rows.push({ d: x.date, t: '资金', i: x.partner, v: x.type === 'DEPOSIT' ? x.amount : -x.amount, id: x.id, type: 'flow' })); if (t !== 'trade' && t !== 'flow') app.s.journals.forEach(x => rows.push({ d: x.date, t: '收支', i: x.note, v: ['DIVIDEND', 'INTEREST'].includes(x.type) ? x.amount : -x.amount, id: x.id, type: 'journal' })); rows.sort((a, b) => new Date(b.d) - new Date(a.d)); document.getElementById('ledger-body').innerHTML = rows.map(r => { if (r.t === '交易') { const tradeDetail = `${r.side === 'BUY' ? '买入' : '卖出'} ${FMT.val(r.qty)}股`; return `<tr onclick="app.ui.editLedgerItem('${r.type}','${r.id}')" style="cursor:pointer;" title="点击编辑"><td class="font-num">${r.d}</td><td><span class="badge bg-light text-dark border">${r.t}</span></td><td>${Utils.escape(r.i)}</td><td><small class="text-muted">${tradeDetail}</small></td><td class="text-end font-num ${r.v >= 0 ? 'text-up' : 'text-down'}">${r.v > 0 ? '+' : ''}${FMT.money(r.v)}</td></tr>`; } else { return `<tr onclick="app.ui.editLedgerItem('${r.type}','${r.id}')" style="cursor:pointer;" title="点击编辑"><td class="font-num">${r.d}</td><td><span class="badge bg-light text-dark border">${r.t}</span></td><td>${Utils.escape(r.i)}</td><td>-</td><td class="text-end font-num ${r.v >= 0 ? 'text-up' : 'text-down'}">${r.v > 0 ? '+' : ''}${FMT.money(r.v)}</td></tr>`; } }).join(''); },
             editLedgerItem: async (type, id) => { if (type === 'trade') { await app.logic.editTrade(id); } else if (type === 'flow' || type === 'journal') { alert(`⚠️ ${type === 'flow' ? '资金流水' : '收支记录'} 编辑功能暂未实现\n\n提示：您可以通过【设置】-【下载备份】导出数据，手动编辑后再恢复。`); } },
-            showModal: (id) => { if (id === 'tradeModal') { document.getElementById('tradeModal-title').innerText = '新增交易'; delete document.getElementById('tradeModal').dataset.editId; document.getElementById('btn-delete-trade').classList.add('d-none'); document.getElementById('ipt-code').value = ''; document.getElementById('ipt-name').innerText = '...'; document.getElementById('ipt-price').value = ''; document.getElementById('ipt-qty').value = ''; document.getElementById('ipt-fee').value = ''; document.getElementById('ipt-date').value = Utils.today(); const lastFx = sessionStorage.getItem('FM_PREF_LAST_FX'); if (lastFx) document.getElementById('ipt-fx').value = lastFx; else document.getElementById('ipt-fx').value = ''; } if (id === 'flowModal') document.getElementById('ipt-flow-date').value = Utils.today(); if (id === 'journalModal') { document.getElementById('ipt-jour-date').value = Utils.today(); document.getElementById('chk-reinvest').checked = false; app.ui.toggleReinvest('DIVIDEND'); } if (id === 'quickHoldingModal') document.getElementById('qh-date').value = Utils.today(); if (id === 'calibrateModal') document.getElementById('calib-date').value = Utils.today(); new bootstrap.Modal(document.getElementById(id)).show(); },
+            showModal: (id) => { if (id === 'tradeModal') { document.getElementById('tradeModal-title').innerText = '新增交易'; delete document.getElementById('tradeModal').dataset.editId; document.getElementById('btn-delete-trade').classList.add('d-none'); document.getElementById('ipt-code').value = ''; document.getElementById('ipt-name').innerText = '...'; document.getElementById('ipt-price').value = ''; document.getElementById('ipt-qty').value = ''; document.getElementById('ipt-fee').value = ''; document.getElementById('ipt-date').value = TODAY(); const lastFx = sessionStorage.getItem('FM_PREF_LAST_FX'); if (lastFx) document.getElementById('ipt-fx').value = lastFx; else document.getElementById('ipt-fx').value = ''; } if (id === 'flowModal') document.getElementById('ipt-flow-date').value = TODAY(); if (id === 'journalModal') { document.getElementById('ipt-jour-date').value = TODAY(); document.getElementById('chk-reinvest').checked = false; app.ui.toggleReinvest('DIVIDEND'); } if (id === 'quickHoldingModal') document.getElementById('qh-date').value = TODAY(); if (id === 'calibrateModal') document.getElementById('calib-date').value = TODAY(); new bootstrap.Modal(document.getElementById(id)).show(); },
             toggleReinvest: (type) => { const div = document.getElementById('div-reinvest'); if (type === 'DIVIDEND') div.classList.remove('d-none'); else div.classList.add('d-none'); },
             openTrade: () => app.ui.showModal('tradeModal'), openFlow: () => app.ui.showModal('flowModal'), openJournal: () => app.ui.showModal('journalModal'), openCalib: () => app.ui.showModal('calibrateModal'), openQuickHolding: () => app.ui.showModal('quickHoldingModal'),
             calcTradeEstimate: () => { },
@@ -1381,33 +1381,15 @@
         },
     
         api: {
-            detect: c => { 
-                // [PATCH-TypeSafety] Force string conversion to prevent TypeError
-                c = String(c || '');
-                if (/^[A-Z]+$/.test(c)) return 'US'; 
-                if (/^\d{5}$/.test(c)) return 'HK'; 
-                if (c.startsWith('200')) return 'SZB'; 
-                if (c.startsWith('900')) return 'SHB'; 
-                if (c.startsWith('6') || c.startsWith('9') || c.startsWith('5')) return 'SH'; 
-                return 'SZ'; 
-            },
+            detect: c => { if (/^[A-Z]+$/.test(c)) return 'US'; if (/^\d{5}$/.test(c)) return 'HK'; if (c.startsWith('200')) return 'SZB'; if (c.startsWith('900')) return 'SHB'; if (c.startsWith('6') || c.startsWith('9') || c.startsWith('5')) return 'SH'; return 'SZ'; },
             _timer: null,
             debouncedFetch: (code, prefix = 'ipt') => { clearTimeout(app.api._timer); app.api._timer = setTimeout(() => app.api.smartFetch(code, prefix), 500); },
             getPrefix: (m, c) => { if (m === 'HK') return 'hk'; if (m === 'US') return 'us'; if (m === 'SH' || m === 'SHB') return 'sh'; if (m === 'SZ' || m === 'SZB') return 'sz'; return (c.startsWith('6') || c.startsWith('5')) ? 'sh' : 'sz'; },
             smartFetch: (c, p = 'ipt') => { if (!c) return; document.getElementById(p + '-name').innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; const m = app.api.detect(c); const pf = app.api.getPrefix(m, c); app.api.load(`https://qt.gtimg.cn/q=${pf}${c}`, () => { const d = window[`v_${pf}${c}`]; if (d) { const v = d.split('~'); document.getElementById(p + '-name').innerText = v[1]; document.getElementById(p + '-price').value = v[3]; } else { document.getElementById(p + '-name').innerText = '未知'; } }, () => { document.getElementById(p + '-name').innerText = '失败'; }, 'gbk'); },
             updateEstPrice: () => { const v = parseFloat(document.getElementById('qh-value').value) || 0, q = parseFloat(document.getElementById('qh-qty').value) || 0; if (v > 0 && q > 0) document.getElementById('qh-est-price').innerText = (v / q).toFixed(3); },
             updateFx: (s, t) => { const c = document.getElementById(s).value; if (app.s.rates[c]) document.getElementById(t).value = app.s.rates[c].toFixed(3); },
-            // [PATCH-GitHub] Added charset support AND no-referrer policy
-            load: (s, cb, eb, c) => { 
-                const e = document.createElement('script'); 
-                e.src = s; 
-                if(c) e.charset = c; 
-                // [PATCH-Fix] Explicitly set referrer policy on script element
-                e.referrerPolicy = "no-referrer";
-                e.onload = () => { cb && cb(); e.remove(); }; 
-                e.onerror = () => { eb && eb(); e.remove(); }; 
-                document.body.appendChild(e); 
-            },
+            // [PATCH-GitHub] Added charset support
+            load: (s, cb, eb, c) => { const e = document.createElement('script'); e.src = s; if(c) e.charset = c; e.onload = () => { cb && cb(); e.remove(); }; e.onerror = () => { eb && eb(); e.remove(); }; document.body.appendChild(e); },
             fetchers: {
                 Tencent: () => new Promise((resolve, reject) => {
                     app.api.load('https://qt.gtimg.cn/q=r_hkHKDCNY,r_usUSDCNY', () => {
@@ -1499,55 +1481,15 @@
                     .catch(() => { console.log("Retrying with ig50..."); return tryTencent('ig50.gtimg.cn'); })
                     .catch(() => {
                         console.log("Falling back to Sina...");
-                        // [Fix-Sina] Rebuild query string for Sina specifically
-                        // Sina uses 'gb_' for US, and has different indices for HK
-                        const sinaQ = cds.map(c => {
-                            const m = app.api.detect(c);
-                            // Sina US prefix override: 'gb_' instead of 'us'
-                            const p = (m === 'US') ? 'gb_' : app.api.getPrefix(m, c);
-                            // Sina US codes are usually lowercase
-                            return (m === 'US') ? (p + c.toLowerCase()) : (p + c);
-                        }).join(',');
-
-                        app.api.load(`https://hq.sinajs.cn/list=${sinaQ},hkHSI`, () => {
+                        app.api.load(`https://hq.sinajs.cn/list=${qStr.split(',').slice(2).join(',')}`, () => {
                             try {
                                 cds.forEach(c => {
-                                    const m = app.api.detect(c); 
-                                    // Construct variable name based on logic above
-                                    const p = (m === 'US') ? 'gb_' : app.api.getPrefix(m, c);
-                                    const varName = (m === 'US') ? `hq_str_${p}${c.toLowerCase()}` : `hq_str_${p}${c}`;
-                                    const sinaVar = window[varName];
-                                    
-                                    if (sinaVar) { 
-                                        const sp = sinaVar.split(',');
-                                        // Market-Specific Parsing (The Linus Fix)
-                                        let cur = 0, pre = 0;
-                                        if (m === 'HK') {
-                                            // HK: Idx 6 is Current, Idx 3 is PrevClose
-                                            cur = parseFloat(sp[6]); pre = parseFloat(sp[3]);
-                                        } else if (m === 'US') {
-                                            // US (gb_): Idx 1 is Current, Idx 26 is PreClose (approx)
-                                            cur = parseFloat(sp[1]); pre = parseFloat(sp[26]) || cur;
-                                        } else {
-                                            // CN: Idx 3 is Current, Idx 2 is PrevClose
-                                            cur = parseFloat(sp[3]); pre = parseFloat(sp[2]);
-                                        }
-                                        
-                                        if (cur > 0) { 
-                                            app.s.mkt[`${m}:${c}`] = { cur, pre }; 
-                                            if (m === 'SH' || m === 'SZ') app.s.mkt[`CN:${c}`] = app.s.mkt[`${m}:${c}`];
-                                        } 
-                                    }
+                                    const m = app.api.detect(c); const p = app.api.getPrefix(m, c); const sinaVar = window[`hq_str_${p}${c}`];
+                                    if (sinaVar) { const sp = sinaVar.split(','); if (sp.length > 3) { app.s.mkt[`${m}:${c}`] = { cur: parseFloat(sp[3]), pre: parseFloat(sp[2]) }; } }
                                 });
-                                // Sina HSI special case
-                                if (window.hq_str_hkHSI) {
-                                    const hsiSp = window.hq_str_hkHSI.split(',');
-                                    app.s.mkt['IDX:HSI'] = { cur: parseFloat(hsiSp[6]) };
-                                }
-
                                 app.s._dirty.mkt = true; 
                                 app.logic.recalc(); persistMktUpdates(); app.status.stk = { ok: true, src: 'Sina' }; if (showToast && fxSuccess) app.ui.toast("股票行情已更新 (备用源)");
-                            } catch (e) { console.error(e); app.status.stk = { ok: false, src: 'Failed' }; }
+                            } catch (e) { app.status.stk = { ok: false, src: 'Failed' }; }
                         }, () => { app.status.stk = { ok: false, src: 'Failed' }; if (showToast) app.ui.toast("行情更新失败"); }, 'gbk');
                     });
     
@@ -1556,10 +1498,8 @@
         }
     };
     document.addEventListener('DOMContentLoaded', app.init);
-
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
